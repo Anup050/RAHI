@@ -1,0 +1,13 @@
+@echo off
+cd ai-engine
+if not exist venv (
+    echo Creating venv...
+    python -m venv venv
+)
+call venv\Scripts\activate
+echo Installing dependencies...
+pip install -r requirements.txt
+echo Training model...
+python train.py
+echo Starting Server...
+start "AI Engine" cmd /k "uvicorn main:app --host 0.0.0.0 --port 8001 --reload"

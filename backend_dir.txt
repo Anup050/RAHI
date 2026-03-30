@@ -1,0 +1,90 @@
+ Volume in drive C is Windows-SSD
+ Volume Serial Number is 7222-2DA1
+
+ Directory of C:\Users\dubey\OneDrive\Desktop\RAHI\backend
+
+03-01-2026  21:00    <DIR>          .
+01-02-2026  22:29    <DIR>          ..
+29-12-2025  03:04               610 .env
+29-12-2025  01:26    <DIR>          api
+18-12-2025  00:01               822 check_db_connection.py
+29-12-2025  02:21    <DIR>          core
+30-12-2025  03:27               579 create_tables.py
+17-12-2025  23:18             1,719 create_test_user.py
+29-12-2025  01:28    <DIR>          db
+18-12-2025  00:08               546 debug_env.bat
+18-12-2025  00:23               212 Dockerfile
+18-12-2025  00:10               350 find_python.bat
+29-12-2025  01:41    <DIR>          jobs
+01-02-2026  21:56             1,124 main.py
+29-12-2025  01:28    <DIR>          models
+29-12-2025  02:20               251 requirements.txt
+30-12-2025  02:52    <DIR>          schemas
+29-12-2025  01:41    <DIR>          services
+29-12-2025  03:11    <DIR>          templates
+29-12-2025  02:44    <DIR>          tests
+29-12-2025  02:21               811 update_db_schema.py
+29-12-2025  03:22             1,802 user_manager.py
+29-12-2025  00:58    <DIR>          venv
+03-01-2026  21:00               736 verify_email_config.py
+30-12-2025  03:36               747 verify_hashing.py
+30-12-2025  03:31               931 verify_setup.py
+07-12-2025  14:42                 0 __init__.py
+01-02-2026  21:57    <DIR>          __pycache__
+              15 File(s)         11,240 bytes
+
+ Directory of C:\Users\dubey\OneDrive\Desktop\RAHI
+
+01-02-2026  22:29    <DIR>          .
+28-01-2026  23:54    <DIR>          ..
+29-12-2025  01:16               425 .env
+07-12-2025  14:41               419 .env.example
+29-12-2025  04:01               553 .gitignore
+07-12-2025  17:42    <DIR>          .vscode
+29-12-2025  01:01    <DIR>          ai-engine
+07-12-2025  14:43    <DIR>          apps
+03-01-2026  21:00    <DIR>          backend
+01-02-2026  22:29                 0 backend_dir.txt
+07-12-2025  17:51             1,092 bootstrap_web.bat
+29-12-2025  04:11               905 cleanup_script.bat
+07-12-2025  17:43               443 clean_setup_web.bat
+24-12-2025  01:03               716 deploy.bat
+07-12-2025  15:25               810 deploy.sh
+24-12-2025  01:06             2,611 docker-compose.prod.yml
+18-12-2025  00:11             1,849 docker-compose.yml
+29-12-2025  04:14                39 exclude_list.txt
+07-12-2025  17:45               519 fix_dependencies.bat
+18-12-2025  01:22               747 fix_login.bat
+08-12-2025  01:11               191 fix_mobile_deps.bat
+07-12-2025  23:42               170 force_install_v2.bat
+07-12-2025  17:56               624 force_local_dev.bat
+07-12-2025  23:22             1,038 full_repair.bat
+07-12-2025  14:42    <DIR>          infra
+29-12-2025  04:05    <DIR>          infrastructure
+07-12-2025  22:46               350 install_deps.bat
+07-12-2025  23:31               366 install_missing.bat
+07-12-2025  15:25               384 locustfile.py
+29-12-2025  04:02               816 Makefile
+07-12-2025  23:23               704 manual_setup.md
+07-12-2025  15:25    <DIR>          nginx
+07-12-2025  18:20               981 nuclear_install.bat
+01-02-2026  22:29                16 python_ver.txt
+07-12-2025  23:32               922 quick_fix.bat
+07-12-2025  15:32             2,024 RAHI_PROJECT_EXECUTION.md
+29-12-2025  04:04             1,417 README.md
+07-12-2025  23:39               381 repair_web_app.bat
+09-12-2025  22:00               353 run_ai_engine.bat
+24-12-2025  00:58               262 run_ai_engine_v2.bat
+09-12-2025  21:55               270 run_backend.bat
+01-02-2026  22:27               150 run_diag.bat
+09-12-2025  21:02                79 run_mobile_app.bat
+29-12-2025  04:03    <DIR>          services
+07-12-2025  14:46                94 setup_backend.bat
+07-12-2025  15:17                99 setup_mobile.bat
+07-12-2025  17:32               277 setup_web.bat
+29-12-2025  04:10               134 start.bat
+29-12-2025  01:43               653 start_infrastructure.bat
+29-12-2025  00:58             2,084 start_rahi_ecosystem.bat
+01-02-2026  22:28             1,949 test_diagnostics.py
+              41 File(s)         27,916 bytes
+              10 Dir(s)  219,105,886,208 bytes free

@@ -1,0 +1,9 @@
+
+--- Testing AI Engine Direct (Port 8001) ---
+Sending: {'text': 'I have high fever and cough'}
+FAILED to connect to AI Engine: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>
+
+--- Testing Backend Relay (Port 8000) ---
+Sending: {'symptoms': 'I have high fever and cough'}
+Status: 200
+Response: {"predictions":[],"message":"AI Service unreachable. Please consult a doctor directly.","error":"All connection attempts failed"}

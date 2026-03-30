@@ -1,0 +1,33 @@
+
+--- Testing AI Engine Direct (Port 8001) ---
+FAILED to connect to AI Engine: name 'urllib' is not defined
+
+--- Testing Backend Relay (Port 8000) ---
+FAILED to connect to Backend: name 'urllib' is not defined
+
+--- Testing AI Engine Direct (Port 8001) ---
+Sending: {'symptoms': 'I have high fever and cough'}
+FAILED to connect to AI Engine: HTTP Error 422: Unprocessable Entity
+
+--- Testing Backend Relay (Port 8000) ---
+Sending: {'symptoms': 'I have high fever and cough'}
+Status: 200
+Response: {"predictions":[],"message":"AI Service error.","error":"Client error '422 Unprocessable Entity' for url 'http://127.0.0.1:8001/predict'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422"}
+
+--- Testing AI Engine Direct (Port 8001) ---
+Sending: {'text': 'I have high fever and cough', 'symptoms': 'I have high fever and cough'}
+FAILED to connect to AI Engine: HTTP Error 500: Internal Server Error
+
+--- Testing Backend Relay (Port 8000) ---
+Sending: {'symptoms': 'I have high fever and cough'}
+Status: 200
+Response: {"predictions":[],"message":"AI Service error.","error":"Server error '500 Internal Server Error' for url 'http://127.0.0.1:8001/predict'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"}
+
+--- Testing AI Engine Direct (Port 8002) ---
+Sending: {'text': 'I have high fever and cough', 'symptoms': 'I have high fever and cough'}
+FAILED to connect to AI Engine: HTTP Error 500: Internal Server Error
+
+--- Testing Backend Relay (Port 8000) ---
+Sending: {'symptoms': 'I have high fever and cough'}
+Status: 200
+Response: {"predictions":[],"message":"AI Service error.","error":"Server error '500 Internal Server Error' for url 'http://127.0.0.1:8002/predict'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500"}

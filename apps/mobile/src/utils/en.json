@@ -1,0 +1,19 @@
+{
+  "welcome": "Namaste",
+  "next_pill": "Next Pill",
+  "emergency": "Call Emergency",
+  "home": "Home",
+  "symptoms": "Check Symptoms",
+  "reminders": "Reminders",
+  "profile": "Profile",
+  "language": "Language",
+  "switch_lang": "Switch to Hindi",
+  "mark_taken": "Mark as Taken",
+  "due_at": "Due at",
+  "offline_mode": "You are Offline - Showing Cached Data",
+  "diagnose_now": "Diagnose Now",
+  "consulting_doctor": "Consulting AI Doctor...",
+  "risk_low": "Low Risk",
+  "risk_high": "High Risk",
+  "book_doctor": "Book Doctor Now"
+}

@@ -1,0 +1,19 @@
+@echo off
+echo Cleaning RAHI Web Frontend...
+cd apps\web
+echo Removing node_modules...
+rmdir /s /q node_modules
+echo Removing .next directory...
+rmdir /s /q .next
+echo Cleaning npm cache...
+call npm cache clean --force
+echo Installing dependencies...
+call npm install
+if %errorlevel% neq 0 (
+    echo Error: npm install failed.
+    pause
+    exit /b %errorlevel%
+)
+echo Starting development server...
+call npm run dev
+pause

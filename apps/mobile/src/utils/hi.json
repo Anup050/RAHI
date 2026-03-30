@@ -1,0 +1,19 @@
+{
+  "welcome": "नमस्ते",
+  "next_pill": "अगली दवा",
+  "emergency": "आपातकालीन कॉल",
+  "home": "होम",
+  "symptoms": "लक्षण जाँचें",
+  "reminders": "रिमाइंडर",
+  "profile": "प्रोफ़ाइल",
+  "language": "भाषा",
+  "switch_lang": "अंग्रेज़ी में बदलें",
+  "mark_taken": "ले लिया",
+  "due_at": "समय",
+  "offline_mode": "आप ऑफ़लाइन हैं - सहेजा हुआ डेटा दिखाया जा रहा है",
+  "diagnose_now": "अभी निदान करें",
+  "consulting_doctor": "AI डॉक्टर से सलाह ले रहे हैं...",
+  "risk_low": "कम जोखिम",
+  "risk_high": "उच्च जोखिम",
+  "book_doctor": "डॉक्टर बुक करें"
+}
