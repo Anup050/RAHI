@@ -1,9 +1,0 @@
-@echo off
-cd apps\web
-echo Deleting lock file...
-del package-lock.json
-echo Installing dependencies...
-npm install
-echo Starting dev server...
-npm run dev
-pause

@@ -11,11 +11,12 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     
-    MONGO_USER: str
-    MONGO_PASSWORD: str
-    MONGO_DB: str
-    MONGO_HOST: str
-    MONGO_PORT: int
+    MONGO_USER: str = ""
+    MONGO_PASSWORD: str = ""
+    MONGO_DB: str = "rahi_logs"
+    MONGO_HOST: str = "localhost"
+    MONGO_PORT: int = 27017
+    MONGODB_URL: str | None = None
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
@@ -23,6 +24,8 @@ class Settings(BaseSettings):
     
     @property
     def MONGODB_URI(self) -> str:
+        if self.MONGODB_URL:
+            return self.MONGODB_URL
         return f"mongodb://{self.MONGO_USER}:{self.MONGO_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}"
 
     # Redis

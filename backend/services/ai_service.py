@@ -2,7 +2,7 @@ import httpx
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
 
-AI_ENGINE_URL = "http://127.0.0.1:8002"
+AI_ENGINE_URL = "http://127.0.0.1:8003"
 
 async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
     """

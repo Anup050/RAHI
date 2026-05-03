@@ -1,8 +1,6 @@
 # --- Global ---
 .DS_Store
 *.log
-.env
-.env*.local
 
 # --- Javascript/Node (Web & Mobile) ---
 node_modules/
@@ -21,12 +19,9 @@ venv/
 .venv/
 .pytest_cache/
 
-# --- AI Specifics ---
-# Ignore raw datasets, but KEEP the trained model if <100MB
-# If model_final.pkl is >100MB, use Git LFS (Large File Storage)
-/services/ai-engine/data/raw/
-
-# --- Database ---
-# Never commit local database volumes
-/data/pg_data
-/data/mongo_data
+# --- Heavy/Generated Files ---
+*.tflite
+*.h5
+*.pkl
+*.pt
+*.onnx
