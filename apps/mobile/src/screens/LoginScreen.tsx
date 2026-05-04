@@ -38,8 +38,11 @@ export default function LoginScreen({ navigation }: any) {
     setIsLoading(true);
     try {
         const response = await authService.verifyLoginEmail(email, otp);
-        const mockUser = { name: "Patient User", email: email }; 
-        await login(response.access_token, mockUser);
+        const userData = response.user || { email: email };
+        if (!userData.full_name) {
+            userData.full_name = userData.email?.split('@')[0] || "User";
+        }
+        await login(response.access_token, userData);
     } catch (error: any) {
         setIsLoading(false);
         console.error(error);

@@ -99,12 +99,16 @@ export default function PatientsListPage() {
                                 </Avatar>
                                 <div>
                                     <div className="font-medium hover:text-primary transition-colors">{patient.name}</div>
-                                    <div className="text-xs text-muted-foreground">{patient.gender}, {patient.age}y • {patient.condition}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {[patient.gender, patient.age ? `${patient.age}y` : null, patient.condition]
+                                            .filter(Boolean)
+                                            .join(' • ')}
+                                    </div>
                                 </div>
                             </Link>
                         </TableCell>
-                        <TableCell>{patient.phone}</TableCell>
-                        <TableCell>{patient.lastVisit}</TableCell>
+                        <TableCell>{patient.phone || "Not Provided"}</TableCell>
+                        <TableCell>{patient.lastVisit || "No record"}</TableCell>
                         <TableCell>
                             <Badge 
                                 variant="outline" 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,12 +19,16 @@ import SignupScreen from './src/screens/SignupScreen';
 import './src/i18n';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
+import PagerView from 'react-native-pager-view';
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 function AppContent() {
   const { token, isLoading } = useAuth();
   const { t } = useTranslation();
+  const pagerRef = React.useRef<PagerView>(null);
+  const [activeTab, setActiveTab] = React.useState(0);
 
   if (isLoading) {
     return (
@@ -34,72 +38,82 @@ function AppContent() {
     );
   }
 
+  const tabs = [
+    { name: 'Home', component: HomeScreen, icon: Home, label: t('home') },
+    { name: 'Reminders', component: RemindersScreen, icon: Clock, label: t('reminders') },
+    { name: 'Appointments', component: AppointmentsScreen, icon: Calendar, label: t('appointments') || "Appointments" },
+    { name: 'Symptoms', component: SymptomScreen, icon: Stethoscope, label: t('symptoms') },
+    { name: 'Profile', component: ProfileScreen, icon: User, label: t('profile') },
+  ];
+
   return (
     <NavigationContainer>
-      {/* Temporarily Bypassing Auth for Demo if Token Logic is broken, 
-          but keeping structure. User likely wants to see the Patient App immediately. 
-          Assuming 'token' might be null initially. */}
       {token ? ( 
-        <Tab.Navigator
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#0284c7',
-            tabBarInactiveTintColor: '#94a3b8',
-            tabBarStyle: { 
-                height: 65, 
-                paddingBottom: 10, 
-                paddingTop: 10,
-                backgroundColor: 'white',
-                borderTopWidth: 1,
-                borderTopColor: '#f1f5f9'
-            },
-            tabBarLabelStyle: {
-                fontSize: 12,
-                fontWeight: '500'
-            }
-          }}
-        >
-          <Tab.Screen 
-            name="Home" 
-            component={HomeScreen} 
-            options={{
-                tabBarLabel: t('home'),
-                tabBarIcon: ({ color, size }: { color: string; size: number }) => <Home color={color} size={size} />
-            }}
-          />
-          <Tab.Screen 
-            name="Reminders" 
-            component={RemindersScreen} 
-            options={{
-                tabBarLabel: t('reminders'),
-                tabBarIcon: ({ color, size }: { color: string; size: number }) => <Clock color={color} size={size} />
-            }}
-          />
-          <Tab.Screen 
-            name="Appointments" 
-            component={AppointmentsScreen} 
-            options={{
-                tabBarLabel: t('appointments') || "Appointments",
-                tabBarIcon: ({ color, size }: { color: string; size: number }) => <Calendar color={color} size={size} />
-            }}
-          />
-          <Tab.Screen 
-            name="Symptoms" 
-            component={SymptomScreen} 
-            options={{
-                tabBarLabel: t('symptoms'),
-                tabBarIcon: ({ color, size }: { color: string; size: number }) => <Stethoscope color={color} size={size} />
-            }}
-          />
-          <Tab.Screen 
-            name="Profile" 
-            component={ProfileScreen} 
-            options={{
-                tabBarLabel: t('profile'),
-                tabBarIcon: ({ color, size }: { color: string; size: number }) => <User color={color} size={size} />
-            }}
-          />
-        </Tab.Navigator>
+        <View style={{ flex: 1 }}>
+          <PagerView 
+            style={{ flex: 1 }} 
+            initialPage={0} 
+            ref={pagerRef}
+            onPageSelected={(e) => setActiveTab(e.nativeEvent.position)}
+          >
+            {tabs.map((tab, index) => {
+              const ScreenComponent = tab.component;
+              const mockNavigation = {
+                navigate: (screenName: string) => {
+                  const targetIndex = tabs.findIndex(t => t.name === screenName);
+                  if (targetIndex !== -1) {
+                    setActiveTab(targetIndex);
+                    pagerRef.current?.setPage(targetIndex);
+                  }
+                },
+                goBack: () => {
+                  // Fallback for goBack if needed
+                }
+              };
+
+              return (
+                <View key={index} style={{ flex: 1 }}>
+                  <ScreenComponent navigation={mockNavigation} />
+                </View>
+              );
+            })}
+          </PagerView>
+          
+          {/* Custom Bottom Bar */}
+          <View style={{ 
+            height: 65, 
+            flexDirection: 'row', 
+            backgroundColor: 'white', 
+            borderTopWidth: 1, 
+            borderTopColor: '#f1f5f9',
+            paddingBottom: 10,
+            paddingTop: 10
+          }}>
+            {tabs.map((tab, index) => {
+              const isActive = activeTab === index;
+              return (
+                <TouchableOpacity 
+                  key={index} 
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                  onPress={() => {
+                    setActiveTab(index);
+                    pagerRef.current?.setPage(index);
+                  }}
+                >
+                  <tab.icon color={isActive ? '#0284c7' : '#94a3b8'} size={24} />
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: isActive ? '#0284c7' : '#94a3b8',
+                    fontWeight: isActive ? '600' : '400',
+                    marginTop: 2
+                  }}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
       ) : (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
            <Stack.Screen name="Login" component={LoginScreen} />

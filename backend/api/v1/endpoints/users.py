@@ -19,6 +19,24 @@ async def read_user_me(
     """
     return current_user
 
+@router.get("/{user_id}", response_model=user_schemas.User)
+async def read_user_by_id(
+    user_id: int,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get a specific user by id.
+    """
+    if current_user.role not in ["doctor", "admin"] and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
 @router.put("/me", response_model=user_schemas.User)
 async def update_user_me(
     *,

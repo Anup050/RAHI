@@ -4,6 +4,8 @@ import api from '../lib/api';
 export interface DashboardStats {
   appointments_count: number;
   pending_requests: number;
+  confirmed_requests: number;
+  completed_requests: number;
   total_patients: number;
   avg_wait_time: string;
 }
@@ -20,18 +22,20 @@ export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboardStats'],
     queryFn: async () => {
-      // Mock data for demonstration - Uncomment API call when backend is ready
-      // try {
-      //   const { data } = await api.get<DashboardStats>('/v1/analytics/dashboard');
-      //   return data;
-      // } catch (error) {
+      try {
+        const { data } = await api.get<DashboardStats>('/analytics/dashboard');
+        return data;
+      } catch (error) {
+         console.error("Dashboard stats fetch failed", error);
          return {
-            appointments_count: 12,
-            pending_requests: 5,
-            total_patients: 1240,
-            avg_wait_time: "14m"
+            appointments_count: 0,
+            pending_requests: 0,
+            confirmed_requests: 0,
+            completed_requests: 0,
+            total_patients: 0,
+            avg_wait_time: "--"
          };
-      // }
+      }
     },
   });
 };
@@ -40,19 +44,17 @@ export const useRecentActivity = () => {
   return useQuery({
     queryKey: ['recentActivity'],
     queryFn: async () => {
-      // Mock data for demonstration - Uncomment API call when backend is ready
-      // try {
-      //   const { data } = await api.get<ActivityItem[]>('/v1/appointments?limit=5&sort=desc');
-      //   return data;
-      // } catch (error) {
-         return [
-            { id: "APT-001", patient_name: "Rohan Das", type: "General Checkup", time: "10:00 AM", status: "completed" },
-            { id: "APT-002", patient_name: "Anjali Sharma", type: "Follow-up", time: "10:30 AM", status: "in_progress" },
-            { id: "APT-003", patient_name: "Vikram Singh", type: "Emergency", time: "11:15 AM", status: "pending" },
-            { id: "APT-004", patient_name: "Priya Patel", type: "Vaccination", time: "11:45 AM", status: "confirmed" },
-            { id: "APT-005", patient_name: "Rahul Kumar", type: "Consultation", time: "12:15 PM", status: "pending" },
-         ] as ActivityItem[];
-      // }
+      try {
+        const { data } = await api.get<any[]>('/appointments?limit=5');
+        // Map backend fields to frontend interface if necessary
+        return data.map(item => ({
+          ...item,
+          status: item.status.toLowerCase()
+        })) as ActivityItem[];
+      } catch (error) {
+         console.error("Recent activity fetch failed", error);
+         return [];
+      }
     },
   });
 };
@@ -62,7 +64,7 @@ export const useGlobalSearch = (query: string) => {
     queryKey: ['globalSearch', query],
     queryFn: async () => {
       if (!query) return [];
-      const { data } = await api.get(`/v1/search?q=${query}`);
+      const { data } = await api.get(`/search?q=${query}`);
       return data;
     },
     enabled: !!query && query.length > 2,

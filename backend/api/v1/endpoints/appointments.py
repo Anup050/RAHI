@@ -10,7 +10,7 @@ from schemas import appointment as appointment_schemas
 
 router = APIRouter()
 
-@router.get("/", response_model=List[appointment_schemas.Appointment])
+@router.get("", response_model=List[appointment_schemas.Appointment])
 async def read_appointments(
     db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
@@ -19,20 +19,23 @@ async def read_appointments(
 ) -> Any:
     """
     Retrieve appointments.
+    Patients see only their own appointments.
+    Doctors see all appointments.
     """
-    # For MVP, just return all appointments or filter by user if simple enough
-    # Assuming doctor sees all appointments for now or their own
     query = select(Appointment)
-    # if current_user.role == "doctor":
-    #     query = query.where(Appointment.doctor_id == current_user.id)
+    
+    # Filter based on user role
+    if current_user.role == "patient":
+        query = query.where(Appointment.patient_id == current_user.id)
+    elif current_user.role == "doctor":
+        # Doctors see their own appointments OR unassigned ones (pending)
+        from sqlalchemy import or_
+        query = query.where(or_(Appointment.doctor_id == current_user.id, Appointment.doctor_id == None))
+    # admin sees all
     
     result = await db.execute(query.offset(skip).limit(limit))
     appointments = result.scalars().all()
     
-    # Map to schema manually if needed or let pydantic handle
-    # We need to ensure schema matches what we return. 
-    # Since we added fields to model, it should be fine.
-    # We hack the 'patient' field in schema to match 'patient_name' in model
     return [
         {
             "id": a.id,
@@ -49,7 +52,42 @@ async def read_appointments(
         for a in appointments
     ]
 
-@router.post("/", response_model=appointment_schemas.Appointment)
+@router.get("/patients")
+async def get_doctor_patients(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get unique patients who have appointments with this doctor.
+    """
+    if current_user.role != "doctor":
+        raise HTTPException(status_code=403, detail="Only doctors can view patient list")
+    
+    # Select unique patients from ALL appointments
+    # Since doctors can see all pending appointments, we show all patients who have ever booked.
+    query = select(User).join(
+        Appointment, User.id == Appointment.patient_id
+    ).distinct()
+    
+    result = await db.execute(query)
+    patients = result.scalars().all()
+    
+    # Format to match frontend expectations, avoiding dummy data
+    return [
+        {
+            "id": str(p.id),
+            "name": p.full_name or "Anonymous",
+            "age": p.age if p.age and p.age > 0 else None,
+            "gender": None, # Remove "Other" placeholder
+            "phone": p.phone_number or "Not Provided",
+            "lastVisit": None, # Remove "2023-10-15" placeholder
+            "status": "Active" if p.is_active else "Inactive",
+            "condition": "Patient"
+        }
+        for p in patients
+    ]
+
+@router.post("", response_model=appointment_schemas.Appointment)
 async def create_appointment(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -59,10 +97,14 @@ async def create_appointment(
     """
     Create new appointment.
     """
+    # Use the logged-in user's name if patient_name is not provided
+    resolved_name = appointment_in.patient_name or current_user.full_name or current_user.email
+    
     appointment = Appointment(
-        doctor_id=current_user.id, # Assigning creating user as doctor for now
+        patient_id=current_user.id,
+        doctor_id=None,  # Will be assigned when a doctor accepts
         time=appointment_in.time,
-        patient_name=appointment_in.patient_name,
+        patient_name=resolved_name,
         type=appointment_in.type,
         reason=appointment_in.reason,
         status="Pending",

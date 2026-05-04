@@ -1,6 +1,6 @@
 "use client"
 
-import { Activity, Users, CalendarDays, Clock, Plus, Loader2 } from "lucide-react"
+import { Activity, Users, CalendarDays, Clock, Plus, Loader2, CheckCircle } from "lucide-react"
 import { StatCard } from "@/components/dashboard/StatCard"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -47,12 +47,19 @@ export default function DashboardPage() {
         trendValue: "Growing" 
     },
     { 
-        title: "Avg Wait Time", 
-        value: stats?.avg_wait_time ?? "--", 
+        title: "Confirmed", 
+        value: stats?.confirmed_requests ?? 0, 
+        icon: CheckCircle, 
+        description: "Ready for visit", 
+        trend: "neutral" as const 
+    },
+    { 
+        title: "Completed", 
+        value: stats?.completed_requests ?? 0, 
         icon: Activity, 
-        description: "Target: <15m", 
-        trend: "down" as const, 
-        trendValue: "Good" 
+        description: "Resolved cases", 
+        trend: "up" as const, 
+        trendValue: "Healthy" 
     },
   ];
 

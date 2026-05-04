@@ -13,6 +13,8 @@ from core.config import settings
 from models.sql_models import User
 from schemas import user as user_schemas, token as token_schemas
 
+ALLOWED_EMAIL = "dubeyanupkumar349@gmail.com"
+
 router = APIRouter()
 
 class OTPVerify(BaseModel):
@@ -33,6 +35,13 @@ async def login_access_token(
     OAuth2 compatible token login, get an access token for future requests
     """
     # Authenticate User
+    # Keep restriction for password login (Doctor Dashboard)
+    if form_data.username.lower() != ALLOWED_EMAIL.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized: Dashboard access is restricted to authorized doctors only."
+        )
+
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
     
@@ -50,6 +59,13 @@ async def login_access_token(
             user.id, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "age": user.age,
+            "role": user.role,
+        }
     }
 
 @router.post("/register-request", response_model=Any)
@@ -62,6 +78,12 @@ async def register_request(
     """
     Register new user step 1: Create inactive user, generate OTP, send email.
     """
+    # Only restrict registration if the role is doctor or admin
+    if user_in.role in ["doctor", "admin"] and user_in.email.lower() != ALLOWED_EMAIL.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized: Doctor/Admin signup is restricted to authorized personnel only."
+        )
     result = await db.execute(select(User).where(User.email == user_in.email))
     user = result.scalars().first()
     if user and user.is_active:
@@ -141,6 +163,13 @@ async def register_verify(
             user.id, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "age": user.age,
+            "role": user.role,
+        }
     }
 
 @router.post("/forgot-password", response_model=Any)
@@ -212,6 +241,7 @@ async def login_request(
     """
     Request OTP for passwordless login (Mobile App).
     """
+    # Allowed for all users on mobile app
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalars().first()
 
@@ -266,4 +296,11 @@ async def login_verify(
             user.id, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "age": user.age,
+            "role": user.role,
+        }
     }

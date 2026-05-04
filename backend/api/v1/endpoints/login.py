@@ -12,6 +12,8 @@ from core.config import settings
 from models.sql_models import User
 from schemas import token as token_schemas
 
+ALLOWED_EMAIL = "dubeyanupkumar349@gmail.com"
+
 router = APIRouter()
 
 class LoginRequest(BaseModel):
@@ -30,6 +32,7 @@ async def request_otp(
     """
     Request OTP for email login.
     """
+    # Allowed for all users
     # Check if user exists
     result = await db.execute(select(User).where(User.email == login_in.email))
     user = result.scalars().first()

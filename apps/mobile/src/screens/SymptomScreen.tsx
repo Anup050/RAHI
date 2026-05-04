@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react-native';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 // types
 interface Prediction {
@@ -18,6 +19,7 @@ interface ApiResponse {
 
 export default function SymptomScreen() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [symptoms, setSymptoms] = useState('');
   const [step, setStep] = useState(1); // 1: Input, 2: Loading, 3: Result
   const [result, setResult] = useState<Prediction | null>(null);
@@ -116,7 +118,7 @@ export default function SymptomScreen() {
                     onPress={async () => {
                         try {
                             await api.post('/appointments/', {
-                                patient_name: "Ramesh Kumar", // Hardcoded for demo matching HomeScreen
+                                patient_name: user?.full_name || user?.email || "Patient",
                                 time: new Date().toLocaleString(),
                                 type: "Video Consult",
                                 reason: result.disease
