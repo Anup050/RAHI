@@ -17,7 +17,7 @@ export function Navbar() {
           <Link href="#about" className="hover:text-primary transition-colors">About</Link>
           <Link href="#services" className="hover:text-primary transition-colors">Services</Link>
           <Link href="#doctors" className="hover:text-primary transition-colors">Doctors</Link>
-          <Link href="#blog" className="hover:text-primary transition-colors">Blog</Link>
+          <Link href="/download" className="hover:text-primary transition-colors font-semibold text-primary">Get App</Link>
         </div>
 
         <div className="flex items-center gap-4">

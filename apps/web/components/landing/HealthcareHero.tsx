@@ -33,6 +33,11 @@ export function HealthcareHero() {
                 Book a call
               </Button>
             </Link>
+            <Link href="/download">
+              <Button size="lg" variant="outline" className="rounded-full h-12 px-8 text-base border-primary text-primary hover:bg-primary/5">
+                Download App
+              </Button>
+            </Link>
             <Button variant="ghost" size="lg" className="rounded-full h-12 px-6 text-base gap-2 hover:bg-secondary">
               <div className="bg-background rounded-full p-1 border shadow-sm">
                 <Play className="h-3 w-3 fill-foreground ml-0.5" />

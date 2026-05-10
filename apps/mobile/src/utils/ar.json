@@ -1,0 +1,22 @@
+{
+  "welcome": "مرحبا",
+  "next_pill": "الجرعة التالية",
+  "emergency": "اتصال طارئ",
+  "home": "الرئيسية",
+  "symptoms": "فحص الأعراض",
+  "reminders": "التذكيرات",
+  "profile": "الملف الشخصي",
+  "language": "اللغة",
+  "switch_lang": "تغيير اللغة",
+  "mark_taken": "تحديد كمأخوذ",
+  "due_at": "في الساعة",
+  "offline_mode": "أنت غير متصل - عرض البيانات المحفوظة",
+  "diagnose_now": "التشخيص الآن",
+  "consulting_doctor": "استشارة الطبيب الذكي...",
+  "risk_low": "خطر منخفض",
+  "risk_high": "خطر مرتفع",
+  "book_doctor": "احجز طبيباً الآن",
+  "appointments": "المواعيد",
+  "medical_history": "السجل الطبي",
+  "no_history": "لا يوجد سجل متاح"
+}

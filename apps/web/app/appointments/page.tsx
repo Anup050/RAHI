@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Clock, Video, CheckCircle, XCircle, MoreVertical, Plus } from "lucide-react"
+import { Calendar, Clock, Video, CheckCircle, XCircle, MoreVertical, Plus, MapPin, Stethoscope, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -36,10 +36,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { VideoCallDialog } from "@/components/appointments/VideoCallDialog"
+import api from "@/lib/api"
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<any[]>([])
+  const [doctors, setDoctors] = useState<any[]>([])
   const [modalOpen, setModalOpen] = useState(false)
+  
+  // Video Call State
+  const [videoCallOpen, setVideoCallOpen] = useState(false)
+  const [activeAppointmentId, setActiveAppointmentId] = useState<number | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Consultation Mode Picker State
+  const [modePickerOpen, setModePickerOpen] = useState(false)
+  const [modePickerAppointment, setModePickerAppointment] = useState<any>(null)
   
   // New Appointment Form State
   const [newPatientName, setNewPatientName] = useState("")
@@ -47,101 +60,127 @@ export default function AppointmentsPage() {
   const [newTime, setNewTime] = useState("")
   const [newType, setNewType] = useState("Video Consult")
   const [newReason, setNewReason] = useState("")
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>("")
+
+  const fetchDoctors = async () => {
+      try {
+          const res = await api.get('/users/doctors')
+          const data = res.data
+          setDoctors(data)
+          // Set default selected doctor if not set
+          if (data.length > 0 && !selectedDoctorId) {
+              setSelectedDoctorId(data[0].id.toString());
+          }
+      } catch (error) {
+          console.error("Failed to fetch doctors", error)
+      }
+  }
 
   const fetchAppointments = async () => {
-       const token = localStorage.getItem('token')
-       if (!token) return
+       setIsLoading(true)
        try {
-           const res = await fetch('http://localhost:8000/api/v1/appointments/', {
-               headers: {
-                   'Authorization': `Bearer ${token}`
-               }
-           })
-            if (res.ok) {
-                const data = await res.json()
-                setAppointments(data)
-            } else {
-                if (res.status === 401 || res.status === 403) {
-                    // Token expired or invalid
-                    console.error("Session expired")
-                    // Optionally redirect to login
-                    // window.location.href = '/login'
-                }
-            }
-        } catch (error) {
+           const res = await api.get('/appointments')
+           setAppointments(res.data)
+        } catch (error: any) {
            console.error("Failed to fetch appointments", error)
+           if (error.response?.status !== 401 && error.response?.status !== 403) {
+               alert(`Failed to fetch appointments: ${error.message || "Unknown error"}`)
+           }
+       } finally {
+           setIsLoading(false)
        }
   }
 
   useEffect(() => {
       fetchAppointments()
+      fetchDoctors()
   }, [])
 
   const handleCreateAppointment = async () => {
-      const token = localStorage.getItem('token')
       try {
-          const res = await fetch('http://localhost:8000/api/v1/appointments/', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                  patient_name: newPatientName,
-                  time: `${newDate} ${newTime}`,
-                  type: newType,
-                  reason: newReason
-              })
-          })
+           const res = await api.post('/appointments', {
+               patient_name: newPatientName,
+               doctor_id: selectedDoctorId ? parseInt(selectedDoctorId) : null,
+               time: `${newDate} ${newTime}`,
+               type: newType,
+               reason: newReason
+           })
           
-          if (res.ok) {
-              setModalOpen(false)
-              fetchAppointments()
-              // Reset form
-              setNewPatientName("")
-              setNewDate("")
-              setNewTime("")
-              setNewReason("")
-          } else {
-              alert("Failed to create appointment")
-          }
-      } catch (error) {
+           setModalOpen(false)
+           fetchAppointments()
+           // Reset form
+           setNewPatientName("")
+           setNewDate("")
+           setNewTime("")
+           setNewReason("")
+      } catch (error: any) {
           console.error(error)
+          alert(error.response?.data?.detail?.message || "Failed to create appointment")
       }
   }
 
-  const handleStatusChange = async (id: number, newStatus: string) => {
+  const handleStatusChange = async (id: number, newStatus: string, reason?: string) => {
     try {
-        const token = localStorage.getItem('token')
-        const res = await fetch(`http://localhost:8000/api/v1/appointments/${id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status: newStatus })
+        await api.patch(`/appointments/${id}`, { 
+            status: newStatus,
+            reason: reason || "" 
         })
-        
-        if (res.ok) {
-             fetchAppointments() // Reload to get fresh state
-        } else {
-             if (res.status === 401 || res.status === 403) {
-                 alert("Session Expired. Please Logout and Login again.")
-             } else {
-                 alert("Failed to update status. Please try again.")
-             }
-             fetchAppointments() // Revert UI
-        }
-    } catch (error) {
+        fetchAppointments() // Reload to get fresh state
+    } catch (error: any) {
         console.error("Failed to update status", error)
-        alert("Network Error: Could not update status.")
+        if (error.response?.status !== 401 && error.response?.status !== 403) {
+            alert("Failed to update status. Please try again.")
+        }
+        fetchAppointments() // Revert UI
+    }
+  }
+
+  // Start consultation: if In-Person, show mode picker; if Video, go straight to call
+  const handleStartConsultation = (apt: any) => {
+    if (apt.type === "In-Person Visit" || apt.type === "In-Person") {
+      setModePickerAppointment(apt)
+      setModePickerOpen(true)
+    } else {
+      // Video Consult: launch video call directly
+      handleStatusChange(apt.id, "In Progress")
+      setActiveAppointmentId(apt.id)
+      setVideoCallOpen(true)
+    }
+  }
+
+  // Mode picker: doctor chose Video for an in-person patient
+  const handleModeChosen = (mode: string) => {
+    if (!modePickerAppointment) return
+    const apt = modePickerAppointment
+    setModePickerOpen(false)
+    setModePickerAppointment(null)
+
+    handleStatusChange(apt.id, "In Progress")
+
+    if (mode === "video") {
+      setActiveAppointmentId(apt.id)
+      setVideoCallOpen(true)
+    }
+    // If "in-person", just mark In Progress — no video dialog opens.
+    // The doctor will use "Mark Done" when finished.
+  }
+
+  // Called by VideoCallDialog when doctor explicitly ends the consultation
+  const handleEndConsultation = () => {
+    if (activeAppointmentId) {
+      handleStatusChange(activeAppointmentId, "Completed")
     }
   }
 
   return (
     <div className="space-y-6 container mx-auto p-6 md:p-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+        <div className="flex items-center space-x-4">
+            <Button variant="outline" asChild>
+                <a href="/dashboard">&larr; Back to Dashboard</a>
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+        </div>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
                 <Button><Plus className="mr-2 h-4 w-4"/> New Appointment</Button>
@@ -186,6 +225,23 @@ export default function AppointmentsPage() {
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="doctor" className="text-right">
+                            Doctor
+                        </Label>
+                        <Select onValueChange={setSelectedDoctorId} value={selectedDoctorId}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select Doctor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {doctors.map(doc => (
+                                    <SelectItem key={doc.id} value={doc.id.toString()}>
+                                        Dr. {doc.full_name} ({doc.specialization})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                      <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="reason" className="text-right">
                             Reason
@@ -225,66 +281,108 @@ export default function AppointmentsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {appointments.map((apt) => (
-                            <TableRow key={apt.id}>
-                                <TableCell className="flex items-center gap-2 font-medium">
-                                    <Clock className="w-4 h-4 text-muted-foreground"/> {apt.time}
-                                </TableCell>
-                                <TableCell>{apt.patient || apt.patient_name}</TableCell>
-                                <TableCell>{apt.type}</TableCell>
-                                <TableCell>
-                                     <Badge 
-                                        variant={
-                                            apt.status === 'Completed' ? 'success' : 
-                                            apt.status === 'Pending' ? 'warning' : 
-                                            apt.status === 'In Progress' ? 'default' : 'secondary'
-                                        }
-                                    >
-                                        {apt.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        {apt.status === "Pending" && (
-                                            <>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleStatusChange(apt.id, "Confirmed")}>
-                                                    <CheckCircle className="h-4 w-4" />
-                                                </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50">
-                                                            <XCircle className="h-4 w-4" />
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Decline Appointment?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This will notify the patient that their appointment request has been declined.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleStatusChange(apt.id, "Declined")}>
-                                                                Decline
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </>
-                                        )}
-                                        {apt.status === "Confirmed" && (
-                                             <Button size="sm" variant="default" className="gap-2" onClick={() => {
-                                                 handleStatusChange(apt.id, "In Progress");
-                                                 window.open(`https://meet.jit.si/RAHI-${apt.id}`, '_blank');
-                                             }}>
-                                                <Video className="h-3 w-3" /> Join Call
-                                             </Button>
-                                        )}
-                                    </div>
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center">
+                                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                                    <span className="text-xs text-muted-foreground mt-2 block">Loading appointments...</span>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : appointments.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                    No appointments found for your account.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            appointments.map((apt) => (
+                                <TableRow key={apt.id}>
+                                    <TableCell className="flex items-center gap-2 font-medium">
+                                        <Clock className="w-4 h-4 text-muted-foreground"/> {apt.time}
+                                    </TableCell>
+                                    <TableCell>{apt.patient || apt.patient_name}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-1.5">
+                                            {apt.type === "Video Consult" ? (
+                                                <Video className="w-3.5 h-3.5 text-blue-500" />
+                                            ) : (
+                                                <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                                            )}
+                                            <span>{apt.type}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                         <Badge 
+                                            variant={
+                                                apt.status === 'Completed' ? 'success' : 
+                                                apt.status === 'Pending' ? 'warning' : 
+                                                apt.status === 'In Progress' ? 'default' : 'secondary'
+                                            }
+                                        >
+                                            {apt.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            {apt.status === "Pending" && (
+                                                <>
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleStatusChange(apt.id, "Confirmed")}>
+                                                        <CheckCircle className="h-4 w-4" />
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                                <XCircle className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Decline Appointment?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This will notify the patient that their appointment request has been declined.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction 
+                                                                    className="bg-red-600 hover:bg-red-700" 
+                                                                    onClick={() => {
+                                                                        const r = prompt("Please provide a reason for declining:")
+                                                                        if (r !== null) handleStatusChange(apt.id, "Declined", r)
+                                                                    }}
+                                                                >
+                                                                    Decline
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </>
+                                            )}
+                                            {apt.status === "Confirmed" && (
+                                                 <Button size="sm" variant="default" className="gap-2" onClick={() => handleStartConsultation(apt)}>
+                                                    <Stethoscope className="h-3 w-3" /> Start Consultation
+                                                 </Button>
+                                            )}
+                                            {apt.status === "In Progress" && (
+                                                <div className="flex items-center gap-2">
+                                                    {(apt.type === "Video Consult") && (
+                                                        <Button size="sm" variant="default" className="gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => {
+                                                            setActiveAppointmentId(apt.id)
+                                                            setVideoCallOpen(true)
+                                                        }}>
+                                                            <Video className="h-3 w-3" /> Rejoin Call
+                                                        </Button>
+                                                    )}
+                                                    <Button size="sm" variant="outline" onClick={() => handleStatusChange(apt.id, "Completed")}>
+                                                        Mark Done
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
@@ -297,7 +395,7 @@ export default function AppointmentsPage() {
                 {/* Pending Column */}
                 <div className="space-y-4">
                     <h3 className="font-semibold text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded inline-block">Pending</h3>
-                    {appointments.filter(a => a.status === 'Pending').map(apt => (
+                    {appointments.filter(a => ['Pending', 'pending', 'scheduled'].includes(a.status)).map(apt => (
                         <Card key={apt.id}>
                             <CardHeader className="p-4 pb-2">
                                 <div className="flex justify-between items-start">
@@ -307,12 +405,22 @@ export default function AppointmentsPage() {
                                 <CardDescription>{apt.reason}</CardDescription>
                             </CardHeader>
                             <CardFooter className="p-4 pt-2 flex justify-end gap-2">
-                                <Button size="sm" variant="outline" className="h-8 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700" onClick={() => handleStatusChange(apt.id, "Declined")}>Decline</Button>
+                                <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-8 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700" 
+                                    onClick={() => {
+                                        const r = prompt("Please provide a reason for declining:")
+                                        if (r !== null) handleStatusChange(apt.id, "Declined", r)
+                                    }}
+                                >
+                                    Decline
+                                </Button>
                                 <Button size="sm" className="h-8 bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(apt.id, "Confirmed")}>Accept</Button>
                             </CardFooter>
                         </Card>
                     ))}
-                    {appointments.filter(a => a.status === 'Pending').length === 0 && (
+                    {appointments.filter(a => ['Pending', 'pending', 'scheduled'].includes(a.status)).length === 0 && (
                         <div className="h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">
                             No pending requests
                         </div>
@@ -322,21 +430,25 @@ export default function AppointmentsPage() {
                  {/* Confirmed Column */}
                  <div className="space-y-4">
                     <h3 className="font-semibold text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded inline-block">Confirmed</h3>
-                     {appointments.filter(a => a.status === 'Confirmed').map(apt => (
+                     {appointments.filter(a => ['Confirmed', 'confirmed'].includes(a.status)).map(apt => (
                         <Card key={apt.id} className="border-l-4 border-l-blue-500">
                              <CardHeader className="p-4 pb-2">
                                 <div className="flex justify-between items-start">
                                     <CardTitle className="text-base">{apt.patient || apt.patient_name}</CardTitle>
                                     <Badge variant="outline">{apt.time}</Badge>
                                 </div>
-                                <CardDescription>{apt.reason}</CardDescription>
+                                <CardDescription className="flex items-center gap-1.5 mt-1">
+                                    {apt.type === "Video Consult" ? (
+                                        <Video className="w-3 h-3 text-blue-500" />
+                                    ) : (
+                                        <MapPin className="w-3 h-3 text-emerald-500" />
+                                    )}
+                                    {apt.reason} • {apt.type}
+                                </CardDescription>
                             </CardHeader>
                             <CardFooter className="p-4 pt-2 flex justify-end">
-                                <Button size="sm" className="h-8 gap-2" onClick={() => {
-                                    handleStatusChange(apt.id, "In Progress");
-                                    window.open(`https://meet.jit.si/RAHI-${apt.id}`, '_blank');
-                                }}>
-                                    <Video className="w-3 h-3" /> Start Consultation
+                                <Button size="sm" className="h-8 gap-2" onClick={() => handleStartConsultation(apt)}>
+                                    <Stethoscope className="w-3 h-3" /> Start Consultation
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -346,20 +458,35 @@ export default function AppointmentsPage() {
                 {/* In Progress / Completed */}
                 <div className="space-y-4">
                     <h3 className="font-semibold text-sm text-green-600 bg-green-50 px-3 py-1 rounded inline-block">Completed / In Progress</h3>
-                     {appointments.filter(apt => ['In Progress', 'Completed'].includes(apt.status)).map(apt => (
+                     {appointments.filter(apt => ['In Progress', 'in progress', 'Completed', 'completed'].some(s => apt.status?.toLowerCase() === s.toLowerCase())).map(apt => (
                         <Card key={apt.id} className={apt.status === 'In Progress' ? 'border-green-500 shadow-md ring-1 ring-green-500' : 'opacity-70'}>
                              <CardHeader className="p-4 pb-2">
                                 <div className="flex justify-between items-start">
                                     <CardTitle className="text-base">{apt.patient || apt.patient_name}</CardTitle>
                                     <Badge variant={apt.status === 'In Progress' ? 'default' : 'secondary'}>{apt.status}</Badge>
                                 </div>
-                                <CardDescription>{apt.type}</CardDescription>
+                                <CardDescription className="flex items-center gap-1.5 mt-1">
+                                    {apt.type === "Video Consult" ? (
+                                        <Video className="w-3 h-3 text-blue-500" />
+                                    ) : (
+                                        <MapPin className="w-3 h-3 text-emerald-500" />
+                                    )}
+                                    {apt.type}
+                                </CardDescription>
                             </CardHeader>
                             {apt.status === 'In Progress' && (
-                                <CardFooter className="p-4 pt-2 flex justify-end">
-                                     <Button size="sm" variant="outline" onClick={() => handleStatusChange(apt.id, "Completed")}>
+                                <CardFooter className="p-4 pt-2 flex justify-end gap-2">
+                                    {(apt.type === "Video Consult") && (
+                                        <Button size="sm" variant="default" className="h-8 gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => {
+                                            setActiveAppointmentId(apt.id)
+                                            setVideoCallOpen(true)
+                                        }}>
+                                            <Video className="w-3 h-3" /> Rejoin Call
+                                        </Button>
+                                    )}
+                                    <Button size="sm" variant="outline" onClick={() => handleStatusChange(apt.id, "Completed")}>
                                         Mark Done
-                                     </Button>
+                                    </Button>
                                 </CardFooter>
                             )}
                         </Card>
@@ -368,6 +495,52 @@ export default function AppointmentsPage() {
              </div>
         </TabsContent>
       </Tabs>
+
+      {/* Consultation Mode Picker Dialog — shown for In-Person appointments */}
+      <Dialog open={modePickerOpen} onOpenChange={(open) => {
+        if (!open) {
+          setModePickerOpen(false)
+          setModePickerAppointment(null)
+        }
+      }}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Choose Consultation Mode</DialogTitle>
+            <DialogDescription>
+              This patient booked an <strong>In-Person</strong> appointment. How would you like to proceed?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-6">
+            <button 
+              onClick={() => handleModeChosen("in-person")}
+              className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
+            >
+              <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                <MapPin className="w-7 h-7 text-emerald-600" />
+              </div>
+              <span className="font-semibold text-sm text-slate-700">In-Person</span>
+              <span className="text-xs text-slate-400 text-center">Patient is physically present</span>
+            </button>
+            <button 
+              onClick={() => handleModeChosen("video")}
+              className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
+            >
+              <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                <Video className="w-7 h-7 text-blue-600" />
+              </div>
+              <span className="font-semibold text-sm text-slate-700">Video Call</span>
+              <span className="text-xs text-slate-400 text-center">Switch to video consultation</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      <VideoCallDialog 
+        isOpen={videoCallOpen} 
+        appointmentId={activeAppointmentId} 
+        onClose={() => setVideoCallOpen(false)}
+        onEndConsultation={handleEndConsultation}
+      />
     </div>
   )
 }

@@ -1,0 +1,22 @@
+{
+  "welcome": "Xin chào",
+  "next_pill": "Thuốc tiếp theo",
+  "emergency": "Cuộc gọi khẩn cấp",
+  "home": "Trang chủ",
+  "symptoms": "Kiểm tra triệu chứng",
+  "reminders": "Nhắc nhở",
+  "profile": "Hồ sơ",
+  "language": "Ngôn ngữ",
+  "switch_lang": "Đổi ngôn ngữ",
+  "mark_taken": "Đánh dấu đã uống",
+  "due_at": "Giờ uống thuốc",
+  "offline_mode": "Bạn đang offline - Hiển thị dữ liệu đã lưu",
+  "diagnose_now": "Chẩn đoán ngay",
+  "consulting_doctor": "Đang tư vấn bác sĩ AI...",
+  "risk_low": "Rủi ro thấp",
+  "risk_high": "Rủi ro cao",
+  "book_doctor": "Đặt lịch bác sĩ ngay",
+  "appointments": "Lịch hẹn",
+  "medical_history": "Lịch sử y tế",
+  "no_history": "Không có lịch sử nào"
+}

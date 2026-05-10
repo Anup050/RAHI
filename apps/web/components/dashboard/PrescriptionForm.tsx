@@ -4,7 +4,10 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Trash2, Plus, FileSignature } from "lucide-react"
+import { useMutation } from "@tanstack/react-query"
+import { Trash2, Plus, FileSignature, Loader2 } from "lucide-react"
+import api from "@/lib/api"
+
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,7 +50,7 @@ const COMMON_MEDICINES = [
   "Pantoprazole"
 ]
 
-export function PrescriptionForm() {
+export function PrescriptionForm({ patientId }: { patientId: number }) {
   const [medicines, setMedicines] = useState<MedicineFormValues[]>([])
   
   const form = useForm<MedicineFormValues>({
@@ -74,11 +77,28 @@ export function PrescriptionForm() {
     setMedicines(medicines.filter((_, i) => i !== index))
   }
 
+  const submitPrescription = useMutation({
+    mutationFn: async (medicinesData: MedicineFormValues[]) => {
+      const response = await api.post('/prescriptions', {
+        patient_id: patientId,
+        medicines: medicinesData
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      alert("Prescription Signed & Sent Successfully!")
+      setMedicines([])
+    },
+    onError: (error) => {
+      console.error("Failed to send prescription", error)
+      alert("Failed to send prescription. Please try again.")
+    }
+  })
+
   const onSignAndSend = () => {
-    console.log("Prescription sent:", medicines)
-    alert("Prescription Signed & Sent Successfully!")
-    setMedicines([])
+    submitPrescription.mutate(medicines)
   }
+
 
   return (
     <Card className="h-full border-l-4 border-l-primary/20">
@@ -181,11 +201,11 @@ export function PrescriptionForm() {
              <Button 
                 size="lg" 
                 onClick={onSignAndSend} 
-                disabled={medicines.length === 0}
+                disabled={medicines.length === 0 || submitPrescription.isPending}
                 className="gap-2"
             >
-                <FileSignature className="h-4 w-4" />
-                Sign & Send Prescription
+                {submitPrescription.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSignature className="h-4 w-4" />}
+                {submitPrescription.isPending ? "Sending..." : "Sign & Send Prescription"}
              </Button>
         </div>
       </CardContent>

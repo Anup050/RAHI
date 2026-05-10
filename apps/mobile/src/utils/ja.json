@@ -1,0 +1,22 @@
+{
+  "welcome": "こんにちは",
+  "next_pill": "次の薬",
+  "emergency": "緊急電話",
+  "home": "ホーム",
+  "symptoms": "症状を確認",
+  "reminders": "リマインダー",
+  "profile": "プロフィール",
+  "language": "言語",
+  "switch_lang": "言語を変更",
+  "mark_taken": "服用済みにする",
+  "due_at": "服用時間",
+  "offline_mode": "オフラインです - キャッシュデータを表示中",
+  "diagnose_now": "今すぐ診断",
+  "consulting_doctor": "AI医師に相談中...",
+  "risk_low": "低リスク",
+  "risk_high": "高リスク",
+  "book_doctor": "今すぐ医師を予約",
+  "appointments": "予約",
+  "medical_history": "診療歴",
+  "no_history": "履歴はありません"
+}

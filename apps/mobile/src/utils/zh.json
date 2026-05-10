@@ -1,0 +1,22 @@
+{
+  "welcome": "你好",
+  "next_pill": "下一颗药",
+  "emergency": "紧急呼叫",
+  "home": "首页",
+  "symptoms": "检查症状",
+  "reminders": "提醒",
+  "profile": "个人资料",
+  "language": "语言",
+  "switch_lang": "切换语言",
+  "mark_taken": "标记为已服用",
+  "due_at": "到期时间",
+  "offline_mode": "您处于离线状态 - 显示缓存数据",
+  "diagnose_now": "立即诊断",
+  "consulting_doctor": "正在咨询AI医生...",
+  "risk_low": "低风险",
+  "risk_high": "高风险",
+  "book_doctor": "立即预约医生",
+  "appointments": "预约",
+  "medical_history": "病历",
+  "no_history": "暂无历史记录"
+}

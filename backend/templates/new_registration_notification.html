@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { padding: 20px; }
+        .details { background-color: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RAHI Admin Alert</h1>
+        </div>
+        <div class="content">
+            <p>Hello Admin,</p>
+            <p>A new doctor has just registered on the RAHI platform and is awaiting your review and approval.</p>
+            <div class="details">
+                <p><strong>Name:</strong> {{ doctor_name }}</p>
+                <p><strong>Email:</strong> {{ doctor_email }}</p>
+                <p><strong>Specialization:</strong> {{ specialization }}</p>
+                <p><strong>Registration Date:</strong> {{ reg_date }}</p>
+            </div>
+            <p>Please log in to the Admin Dashboard to review their verification documents and approve their account.</p>
+            <a href="http://localhost:3000/admin/approvals" class="btn">View Approval Queue</a>
+        </div>
+        <div class="footer">
+            &copy; {{ current_year }} RAHI Health.
+        </div>
+    </div>
+</body>
+</html>

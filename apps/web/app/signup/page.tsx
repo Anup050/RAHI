@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { UserPlus, Lock, Mail, User, Building2, Loader2, ArrowRight, CheckCircle } from 'lucide-react';
+import { UserPlus, Lock, Mail, User, Building2, Loader2, ArrowRight, CheckCircle, FileText, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function SignupPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [step, setStep] = useState<'details' | 'otp' | 'documents'>('details');
   const [formData, setFormData] = useState({
     name: '',
     clinicName: '',
@@ -17,8 +17,11 @@ export default function SignupPage() {
     confirmPassword: ''
   });
   const [otp, setOtp] = useState('');
+  const [govtId, setGovtId] = useState<File | null>(null);
+  const [clinicId, setClinicId] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState('');
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +44,7 @@ export default function SignupPage() {
            password: formData.password,
            full_name: formData.name,
            phone_number: "", 
-           role: "doctor" // Default role
+           role: "doctor" 
         })
       });
 
@@ -77,15 +80,64 @@ export default function SignupPage() {
 
           const data = await res.json();
           if (!res.ok) {
+              // Special case: if account created but needs approval, we get a token or message
+              if (res.status === 403 && data.access_token) {
+                  // This shouldn't happen with my latest backend change, but handling anyway
+              }
               throw new Error(data.detail || 'Verification failed');
           }
 
-          login(data.access_token, null); // Will redirect to dashboard
+          setToken(data.access_token);
+          setStep('documents');
       } catch (err: any) {
-        setError(err.message || 'Verification failed. Please try again.');
+        // If the error message indicates pending approval, we might already be registered
+        if (err.message.includes('pending admin approval') || err.message.includes('already active')) {
+            // We need to login to get a token for upload
+            setError("Your account is registered. Please sign in to upload documents.");
+            setTimeout(() => router.push('/login'), 2000);
+        } else {
+            setError(err.message || 'Verification failed. Please try again.');
+        }
       } finally {
         setIsLoading(false);
       }
+  }
+
+  const handleDocumentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!govtId || !clinicId) {
+        setError("Please upload both documents");
+        return;
+    }
+
+    setError('');
+    setIsLoading(true);
+
+    try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('govt_id', govtId);
+        formDataUpload.append('clinic_id', clinicId);
+
+        const res = await fetch('http://localhost:8000/api/v1/auth/upload-verification', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formDataUpload
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.detail || 'Upload failed');
+        }
+
+        // Success - redirect to pending status
+        router.push('/login?status=pending');
+    } catch (err: any) {
+        setError(err.message || 'Upload failed. Please try again.');
+    } finally {
+        setIsLoading(false);
+    }
   }
 
   return (
@@ -109,10 +161,12 @@ export default function SignupPage() {
         <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {step === 'details' ? 'Create your account' : 'Verify Email'}
+                {step === 'details' ? 'Create your account' : step === 'otp' ? 'Verify Email' : 'Upload Documents'}
             </h1>
             <p className="text-gray-500 text-sm">
-                {step === 'details' ? 'Join the rural healthcare revolution' : `Enter the OTP sent to ${formData.email}`}
+                {step === 'details' ? 'Join the rural healthcare revolution' : 
+                 step === 'otp' ? `Enter the OTP sent to ${formData.email}` : 
+                 'Please upload required documents for verification'}
             </p>
           </div>
 
@@ -122,7 +176,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          {step === 'details' ? (
+          {step === 'details' && (
               <form onSubmit={handleDetailsSubmit} className="space-y-4">
                 <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Full Name</label>
@@ -232,7 +286,9 @@ export default function SignupPage() {
                 )}
                 </button>
             </form>
-          ) : (
+          )}
+
+          {step === 'otp' && (
              <form onSubmit={handleOtpSubmit} className="space-y-4">
                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="otp">One-Time Password (OTP)</label>
@@ -262,7 +318,7 @@ export default function SignupPage() {
                     </div>
                   ) : (
                     <div className="flex items-center">
-                      Verify & Register <CheckCircle className="ml-2 h-4 w-4" />
+                      Verify & Next <CheckCircle className="ml-2 h-4 w-4" />
                     </div>
                   )}
                 </button>
@@ -270,6 +326,58 @@ export default function SignupPage() {
                     Back to details
                  </button>
              </form>
+          )}
+
+          {step === 'documents' && (
+              <form onSubmit={handleDocumentSubmit} className="space-y-6">
+                <div className="space-y-4">
+                    <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary transition-colors">
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-sm font-medium text-gray-700">Government ID Proof (Aadhaar/PAN)</label>
+                            <span className="text-[10px] text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">Upload masked ID proof only for privacy purpose</span>
+                        </div>
+                        <div className="flex items-center justify-center w-full">
+                            <label className="flex flex-col items-center justify-center w-full h-32 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                                    <p className="text-sm text-gray-500">{govtId ? govtId.name : 'Click to upload Govt ID'}</p>
+                                </div>
+                                <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => setGovtId(e.target.files?.[0] || null)} />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary transition-colors">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Clinic/Hospital ID Card</label>
+                        <div className="flex items-center justify-center w-full">
+                            <label className="flex flex-col items-center justify-center w-full h-32 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <FileText className="w-8 h-8 text-gray-400 mb-2" />
+                                    <p className="text-sm text-gray-500">{clinicId ? clinicId.name : 'Click to upload Clinic ID'}</p>
+                                </div>
+                                <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => setClinicId(e.target.files?.[0] || null)} />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={isLoading || !govtId || !clinicId}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? (
+                        <div className="flex items-center">
+                        <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                        Uploading...
+                        </div>
+                    ) : (
+                        <div className="flex items-center">
+                        Complete Registration <CheckCircle className="ml-2 h-4 w-4" />
+                        </div>
+                    )}
+                </button>
+              </form>
           )}
           
           <div className="mt-6 text-center">

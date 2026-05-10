@@ -1,0 +1,22 @@
+{
+  "welcome": "السلام علیکم",
+  "next_pill": "اگلی دوائی",
+  "emergency": "ہنگامی کال",
+  "home": "ہوم",
+  "symptoms": "علامات چیک کریں",
+  "reminders": "یاد دہانیاں",
+  "profile": "پروفائل",
+  "language": "زبان",
+  "switch_lang": "زبان تبدیل کریں",
+  "mark_taken": "لی گئی کے طور پر نشان زد کریں",
+  "due_at": "وقت",
+  "offline_mode": "آپ آف لائن ہیں - محفوظ کردہ ڈیٹا دکھایا جا رہا ہے",
+  "diagnose_now": "ابھی تشخیص کریں",
+  "consulting_doctor": "AI ڈاکٹر سے مشورہ کر رہے ہیں...",
+  "risk_low": "کم خطرہ",
+  "risk_high": "زیادہ خطرہ",
+  "book_doctor": "ابھی ڈاکٹر بک کریں",
+  "appointments": "ملاقاتیں",
+  "medical_history": "طبی تاریخ",
+  "no_history": "کوئی تاریخ دستیاب نہیں"
+}

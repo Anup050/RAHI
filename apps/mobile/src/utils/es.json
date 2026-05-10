@@ -1,0 +1,22 @@
+{
+  "welcome": "Hola",
+  "next_pill": "Próxima pastilla",
+  "emergency": "Llamada de emergencia",
+  "home": "Inicio",
+  "symptoms": "Verificar síntomas",
+  "reminders": "Recordatorios",
+  "profile": "Perfil",
+  "language": "Idioma",
+  "switch_lang": "Cambiar idioma",
+  "mark_taken": "Marcar como tomado",
+  "due_at": "Debido a las",
+  "offline_mode": "Estás sin conexión - Mostrando datos en caché",
+  "diagnose_now": "Diagnosticar ahora",
+  "consulting_doctor": "Consultando al médico IA...",
+  "risk_low": "Riesgo bajo",
+  "risk_high": "Riesgo alto",
+  "book_doctor": "Reservar médico ahora",
+  "appointments": "Citas",
+  "medical_history": "Historial médico",
+  "no_history": "No hay historial disponible"
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { background-color: #ef4444; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { padding: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RAHI Health</h1>
+        </div>
+        <div class="content">
+            <p>Dear Dr. {{ doctor_name }},</p>
+            <p>Thank you for your interest in joining the RAHI Health platform.</p>
+            <p>After carefully reviewing your application and documentation, we regret to inform you that we are unable to approve your account at this time.</p>
+            <p><strong>Reason for rejection:</strong> {{ reason }}</p>
+            <p>If you believe this is an error or if you have updated documentation, you may contact our support team at rahi.healthcare.app@gmail.com.</p>
+            <p>Best regards,<br>The RAHI Health Team</p>
+        </div>
+        <div class="footer">
+            &copy; {{ current_year }} RAHI Health. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 const Switch = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { onCheckedChange?: (checked: boolean) => void }
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { checked?: boolean; defaultChecked?: boolean; onCheckedChange?: (checked: boolean) => void }
 >(({ className, checked, defaultChecked, onCheckedChange, ...props }, ref) => {
   const [localChecked, setLocalChecked] = React.useState(defaultChecked ?? false);
   const isControlled = checked !== undefined;

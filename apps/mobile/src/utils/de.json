@@ -1,0 +1,22 @@
+{
+  "welcome": "Hallo",
+  "next_pill": "Nächste Pille",
+  "emergency": "Notruf",
+  "home": "Startseite",
+  "symptoms": "Symptome prüfen",
+  "reminders": "Erinnerungen",
+  "profile": "Profil",
+  "language": "Sprache",
+  "switch_lang": "Sprache wechseln",
+  "mark_taken": "Als eingenommen markieren",
+  "due_at": "Fällig um",
+  "offline_mode": "Sie sind offline - Zwischengespeicherte Daten werden angezeigt",
+  "diagnose_now": "Jetzt diagnostizieren",
+  "consulting_doctor": "KI-Arzt wird konsultiert...",
+  "risk_low": "Geringes Risiko",
+  "risk_high": "Hohes Risiko",
+  "book_doctor": "Arzt buchen",
+  "appointments": "Termine",
+  "medical_history": "Krankengeschichte",
+  "no_history": "Kein Verlauf verfügbar"
+}

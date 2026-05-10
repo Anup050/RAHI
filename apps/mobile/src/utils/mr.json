@@ -1,0 +1,22 @@
+{
+  "welcome": "नमस्कार",
+  "next_pill": "पुढील औषध",
+  "emergency": "आणीबाणी कॉल",
+  "home": "मुख्यपृष्ठ",
+  "symptoms": "लक्षणे तपासा",
+  "reminders": "स्मरणपत्रे",
+  "profile": "प्रोफाइल",
+  "language": "भाषा",
+  "switch_lang": "भाषा बदला",
+  "mark_taken": "घेतले म्हणून चिन्हांकित करा",
+  "due_at": "वेळ",
+  "offline_mode": "तुम्ही ऑफलाइन आहात - साठवलेला डेटा दाखवत आहे",
+  "diagnose_now": "आता निदान करा",
+  "consulting_doctor": "AI डॉक्टरांचा सल्ला घेत आहे...",
+  "risk_low": "कमी धोका",
+  "risk_high": "जास्त धोका",
+  "book_doctor": "आता डॉक्टर बुक करा",
+  "appointments": "भेटी",
+  "medical_history": "वैद्यकीय इतिहास",
+  "no_history": "कोणताही इतिहास उपलब्ध नाही"
+}

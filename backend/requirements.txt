@@ -6,7 +6,7 @@ asyncpg
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
-python-email-validator
+email-validator
 fastapi-mail>=1.4.1
 python-multipart
 motor
@@ -16,6 +16,4 @@ apscheduler
 pytest
 requests
 locust
-
-
-
+PyJWT

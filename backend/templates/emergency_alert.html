@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #e11d48; border-radius: 10px; }
+        .header { background-color: #e11d48; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; background-color: #fff1f2; }
+        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
+        .alert-box { background-color: white; border: 1px solid #fda4af; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .label { font-weight: bold; color: #be123c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 EMERGENCY ALERT</h1>
+        </div>
+        <div class="content">
+            <p>Dear {{ recipient_name }},</p>
+            <p>An emergency alert has been triggered on the RAHI Health platform. Immediate attention is required.</p>
+            
+            <div class="alert-box">
+                <p><span class="label">Patient Name:</span> {{ patient_name }}</p>
+                <p><span class="label">Reported Reason/Disease:</span> {{ reason }}</p>
+                <p><span class="label">Targeted Doctor:</span> {{ target_doctor }}</p>
+            </div>
+
+            <p>Please log in to the dashboard immediately to take action or contact the patient directly.</p>
+            
+            <p>Stay Safe,<br>RAHI Health System</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{ current_year }} RAHI Health. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

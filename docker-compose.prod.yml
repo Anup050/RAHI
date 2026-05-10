@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: rahi_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+      - backend
+
+  # Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+    container_name: rahi_backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - AI_ENGINE_URL=http://ai_engine:8001
+    ports:
+      - "8000:8000"
+
+  # AI Engine
+  ai_engine:
+    build:
+      context: ./ai-engine
+    container_name: rahi_ai_engine
+    restart: always
+    ports:
+      - "8001:8001"
+
+  # Web (Next.js)
+  web:
+    build:
+      context: ./apps/web
+    container_name: rahi_web
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_URL=/api/v1
+    ports:
+      - "3000:3000"

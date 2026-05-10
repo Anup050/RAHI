@@ -12,7 +12,9 @@ export default function SignupScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
 
   const handleRegisterRequest = async () => {
@@ -28,8 +30,9 @@ export default function SignupScreen({ navigation }: any) {
             full_name: fullName,
             password,
             age: age ? parseInt(age) : null,
+            gender: gender ? gender : null,
             role: "patient", // Force patient role for mobile app
-            phone_number: ""
+            phone_number: phoneNumber
         });
         setIsLoading(false);
         setStep(2);
@@ -112,6 +115,27 @@ export default function SignupScreen({ navigation }: any) {
                     keyboardType="number-pad"
                     value={age}
                     onChangeText={setAge}
+                  />
+              </View>
+
+              <View className="mb-6">
+                  <Text className="text-gray-600 mb-2">Gender</Text>
+                  <TextInput 
+                    className="border border-gray-300 rounded-xl p-4 text-lg"
+                    placeholder="Male, Female, Other"
+                    value={gender}
+                    onChangeText={setGender}
+                  />
+              </View>
+
+              <View className="mb-6">
+                  <Text className="text-gray-600 mb-2">Phone Number</Text>
+                  <TextInput 
+                    className="border border-gray-300 rounded-xl p-4 text-lg"
+                    placeholder="+1234567890"
+                    keyboardType="phone-pad"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
                   />
               </View>
 

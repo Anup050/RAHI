@@ -1,10 +1,10 @@
 import httpx
 from typing import List, Dict, Any, Optional
 from fastapi import HTTPException
-
-AI_ENGINE_URL = "http://127.0.0.1:8003"
+from core.config import settings
 
 async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
+    ai_url = settings.AI_ENGINE_URL
     """
     Sends symptoms to the AI Engine and returns predictions.
     Fallback: Returns a default message if AI service is unreachable.
@@ -13,7 +13,7 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=5.0) as client:
             # Send both 'text' and 'symptoms' to be robust against AI Engine version mismatches
             response = await client.post(
-                f"{AI_ENGINE_URL}/predict",
+                f"{ai_url}/predict",
                 json={"symptoms": symptoms, "text": symptoms}
             )
             response.raise_for_status()

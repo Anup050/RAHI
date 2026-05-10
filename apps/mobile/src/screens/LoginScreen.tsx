@@ -25,7 +25,8 @@ export default function LoginScreen({ navigation }: any) {
         Alert.alert("OTP Sent", "Six digit code sent to your email.");
     } catch (error: any) {
         setIsLoading(false);
-        Alert.alert("Error", "Failed to send OTP. Ensure email is registered.");
+        const message = error.response?.data?.detail || "Failed to send OTP. Please try again.";
+        Alert.alert("Login Restricted", message);
     }
   };
 

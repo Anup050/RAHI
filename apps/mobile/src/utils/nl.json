@@ -1,0 +1,22 @@
+{
+  "welcome": "Hallo",
+  "next_pill": "Volgende pil",
+  "emergency": "Noodoproep",
+  "home": "Startpagina",
+  "symptoms": "Symptomen controleren",
+  "reminders": "Herinneringen",
+  "profile": "Profiel",
+  "language": "Taal",
+  "switch_lang": "Taal wisselen",
+  "mark_taken": "Markeer als ingenomen",
+  "due_at": "Innametijd",
+  "offline_mode": "U bent offline - Gecachte gegevens worden weergegeven",
+  "diagnose_now": "Nu diagnosticeren",
+  "consulting_doctor": "AI-arts raadplegen...",
+  "risk_low": "Laag risico",
+  "risk_high": "Hoog risico",
+  "book_doctor": "Nu een arts boeken",
+  "appointments": "Afspraken",
+  "medical_history": "Medische geschiedenis",
+  "no_history": "Geen geschiedenis beschikbaar"
+}

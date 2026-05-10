@@ -1,0 +1,22 @@
+{
+  "welcome": "નમસ્તે",
+  "next_pill": "આગળની ગોળી",
+  "emergency": "કટોકટી કૉલ",
+  "home": "હોમ",
+  "symptoms": "લક્ષણો તપાસો",
+  "reminders": "રિમાઇન્ડર",
+  "profile": "પ્રોફાઇલ",
+  "language": "ભાષા",
+  "switch_lang": "ભાષા બદલો",
+  "mark_taken": "લીધું તરીકે ચિહ્નિત કરો",
+  "due_at": "સમય",
+  "offline_mode": "તમે ઑફ્‌લાઇન છો - સાચવેલ ડેટા બતાવી રહ્યા છીએ",
+  "diagnose_now": "હવે નિદાન કરો",
+  "consulting_doctor": "AI ડૉક્ટર સાથે સલાહ લઈ રહ્યા છીએ...",
+  "risk_low": "ઓછું જોખમ",
+  "risk_high": "વધુ જોખમ",
+  "book_doctor": "હવે ડૉક્ટર બુક કરો",
+  "appointments": "એપોઇન્ટ્મેન્ટ",
+  "medical_history": "તબીબી ઇતિહાસ",
+  "no_history": "કોઈ ઇતિહાસ ઉપલબ્ધ નથી"
+}

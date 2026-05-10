@@ -13,6 +13,8 @@ export interface DashboardStats {
 export interface ActivityItem {
   id: string;
   patient_name: string;
+  patient_rahi_id?: string;
+  doctor_name?: string;
   type: string;
   time: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'in_progress';

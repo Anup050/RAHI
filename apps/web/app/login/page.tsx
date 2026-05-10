@@ -25,7 +25,7 @@ export default function LoginPage() {
       formData.append('username', email);
       formData.append('password', password);
 
-      const res = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -39,7 +39,7 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      login(data.access_token, null); // Let AuthContext fetch user details
+      login(data.access_token, data.user); // Pass user data directly to avoid extra fetch
     } catch (err: any) {
       setError(err.message || 'Invalid credentials. Please try again.');
     }

@@ -17,12 +17,21 @@ interface ApiResponse {
     message?: string;
 }
 
-export default function SymptomScreen() {
+export default function SymptomScreen({ navigation }: any) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [symptoms, setSymptoms] = useState('');
   const [step, setStep] = useState(1); // 1: Input, 2: Loading, 3: Result
   const [result, setResult] = useState<Prediction | null>(null);
+
+  const getSpecialistCategory = (disease: string) => {
+    const d = disease.toLowerCase();
+    if (d.includes('skin') || d.includes('fungal') || d.includes('acne') || d.includes('dermat')) return 'Dermatologist';
+    if (d.includes('heart') || d.includes('cardio')) return 'Cardiologist';
+    if (d.includes('fever') || d.includes('flu') || d.includes('cold')) return 'General Physician';
+    if (d.includes('joint') || d.includes('bone') || d.includes('arthritis')) return 'Orthopedist';
+    return 'General Physician';
+  };
 
   const handleDiagnose = async () => {
     if (!symptoms.trim()) return;
@@ -114,24 +123,12 @@ export default function SymptomScreen() {
                 </Text>
 
                 <TouchableOpacity 
-                    className="bg-danger p-4 rounded-xl flex-row justify-center items-center mb-4"
-                    onPress={async () => {
-                        try {
-                            await api.post('/appointments/', {
-                                patient_name: user?.full_name || user?.email || "Patient",
-                                time: new Date().toLocaleString(),
-                                type: "Video Consult",
-                                reason: result.disease
-                            });
-                            Alert.alert("Success", "Doctor appointment booked successfully! You will be notified when the doctor confirms.");
-                        } catch (error: any) {
-                            console.error(error);
-                            if (error.response?.status === 401 || error.response?.status === 403) {
-                                Alert.alert("Session Expired", "Please logout from Profile and login again to book an appointment.");
-                            } else {
-                                Alert.alert("Error", "Failed to book appointment. Please try again.");
-                            }
-                        }
+                    className="bg-primary p-4 rounded-xl flex-row justify-center items-center mb-4"
+                    onPress={() => {
+                        navigation.navigate('DoctorSelection', {
+                            category: getSpecialistCategory(result.disease),
+                            disease: result.disease
+                        });
                     }}
                 >
                     <Text className="text-white font-bold text-lg">{t('book_doctor')}</Text>

@@ -2,6 +2,13 @@ from fastapi import FastAPI
 from core.config import settings
 
 app = FastAPI(title="RAHI Backend", version="0.1.0")
+ 
+from fastapi.staticfiles import StaticFiles
+import os
+ 
+# Ensure static directory exists
+os.makedirs("static/uploads", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Security Middleware
 from fastapi.middleware.cors import CORSMiddleware

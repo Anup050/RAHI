@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { text-align: center; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 20px; }
+        .footer { margin-top: 30px; font-size: 12px; color: #777; text-align: center; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #0284c7; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #0284c7;">RAHI Health</h1>
+        </div>
+        <p>Dear Dr. {{ doctor_name }},</p>
+        <p>Great news! Your account on the RAHI Health platform has been <strong>approved</strong> by our administration team.</p>
+        <p>You can now log in to your dashboard to manage appointments, consult with patients, and access clinical tools.</p>
+        <a href="http://localhost:3000/login" class="button">Log In to Dashboard</a>
+        <p>If you have any questions, feel free to contact our support team.</p>
+        <div class="footer">
+            &copy; {{ current_year }} RAHI Health. Empowering Rural Healthcare.
+        </div>
+    </div>
+</body>
+</html>

@@ -166,6 +166,7 @@ export default function DashboardPage() {
                             <TableRow>
                                 <TableHead className="w-[100px]">ID</TableHead>
                                 <TableHead>Patient</TableHead>
+                                <TableHead>Consultant</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Time</TableHead>
                                 <TableHead>Status</TableHead>
@@ -175,7 +176,17 @@ export default function DashboardPage() {
                             {activity.map((item) => (
                                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
                                     <TableCell className="font-medium">{item.id}</TableCell>
-                                    <TableCell>{item.patient_name}</TableCell>
+                                    <TableCell>
+                                        <div className="font-medium">{item.patient_name}</div>
+                                        {item.patient_rahi_id && (
+                                            <div className="text-xs text-muted-foreground bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded inline-block mt-1">
+                                                {item.patient_rahi_id}
+                                            </div>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="text-sm font-medium">{item.doctor_name || "Unassigned"}</div>
+                                    </TableCell>
                                     <TableCell>{item.type}</TableCell>
                                     <TableCell>{item.time}</TableCell>
                                     <TableCell>

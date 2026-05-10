@@ -41,7 +41,10 @@ async def request_otp(
         raise HTTPException(status_code=404, detail="User not found")
 
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=400, 
+            detail="Your account is blocked. Please contact admin at rahi.healthcare.app@gmail.com for assistance."
+        )
 
     # Generate 6-digit OTP
     otp_code = str(random.randint(100000, 999999))

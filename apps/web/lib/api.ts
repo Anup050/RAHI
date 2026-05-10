@@ -20,7 +20,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    if ((error.response?.status === 401 || error.response?.status === 403) && typeof window !== 'undefined') {
       localStorage.removeItem('token');
       // Only redirect if not already on login page to avoid loops
       if (!window.location.pathname.includes('/login')) {

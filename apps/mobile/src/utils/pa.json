@@ -1,0 +1,22 @@
+{
+  "welcome": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ",
+  "next_pill": "ਅਗਲੀ ਦਵਾਈ",
+  "emergency": "ਐਮਰਜੈਂਸੀ ਕਾਲ",
+  "home": "ਹੋਮ",
+  "symptoms": "ਲੱਛਣ ਜਾਂਚੋ",
+  "reminders": "ਯਾਦ-ਦਹਾਨੀਆਂ",
+  "profile": "ਪ੍ਰੋਫਾਈਲ",
+  "language": "ਭਾਸ਼ਾ",
+  "switch_lang": "ਭਾਸ਼ਾ ਬਦਲੋ",
+  "mark_taken": "ਲੈ ਲਿਆ ਗਿਆ ਦੱਸੋ",
+  "due_at": "ਸਮਾਂ",
+  "offline_mode": "ਤੁਸੀਂ ਔਫਲਾਈਨ ਹੋ - ਸੁਰੱਖਿਅਤ ਡੇਟਾ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ",
+  "diagnose_now": "ਹੁਣੇ ਤਸ਼ਖੀਸ ਕਰੋ",
+  "consulting_doctor": "AI ਡਾਕਟਰ ਨਾਲ ਸਲਾਹ ਲਈ ਜਾ ਰਹੀ ਹੈ...",
+  "risk_low": "ਘੱਟ ਖ਼ਤਰਾ",
+  "risk_high": "ਉੱਚ ਖ਼ਤਰਾ",
+  "book_doctor": "ਹੁਣੇ ਡਾਕਟਰ ਬੁੱਕ ਕਰੋ",
+  "appointments": "ਅਪੌਇੰਟਮੈਂਟ",
+  "medical_history": "ਡਾਕਟਰੀ ਇਤਿਹਾਸ",
+  "no_history": "ਕੋਈ ਇਤਿਹਾਸ ਉਪਲਬਧ ਨਹੀਂ"
+}

@@ -4,12 +4,14 @@ import { Clock, CheckCircle, Pill } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 interface MedicationCardProps {
+  id?: string;
   name: string;
   time: string;
   dosage: string;
   isTaken?: boolean;
   onTake: () => void;
 }
+
 
 export const MedicationCard = ({ name, time, dosage, isTaken, onTake }: MedicationCardProps) => {
   const { t } = useTranslation();

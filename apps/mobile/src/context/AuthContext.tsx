@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storageService } from '../services/storage';
+import api from '../services/api';
 
 interface AuthContextType {
   user: any;
@@ -19,6 +20,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadStorageData();
+    
+    // Add global response interceptor for 401/403
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          await logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => api.interceptors.response.eject(interceptor);
   }, []);
 
   const loadStorageData = async () => {
@@ -29,6 +43,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(storedUser);
+        
+        // Refresh user data from backend to ensure we have latest fields (like rahi_id)
+        try {
+            api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            const { data } = await api.get('/users/me');
+            if (data) {
+                setUser(data);
+                await storageService.setUser(data);
+            }
+        } catch (err) {
+            console.error("Failed to refresh user data", err);
+        }
       }
     } catch (e) {
       console.error(e);

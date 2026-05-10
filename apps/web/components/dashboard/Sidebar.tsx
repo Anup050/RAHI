@@ -25,18 +25,18 @@ const doctorRoutes = [
 ]
 
 const adminRoutes = [
-  { href: "/admin", label: "Overview", icon: Activity },
-  { href: "/admin/clinics", label: "Clinics", icon: Building2 },
-  { href: "/admin/staff", label: "Staff", icon: Users },
-  { href: "/admin/logs", label: "System Logs", icon: FileText },
+  { href: "/admin", label: "Admin Overview", icon: Activity },
+  { href: "/admin/approvals", label: "Doctor Approvals", icon: Users },
+  { href: "/dashboard", label: "Doctor View", icon: LayoutDashboard },
 ]
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   
-  // In a real app, we check user role. Defaulting to doctor for now.
-  const routes = doctorRoutes
+  // Use user role to determine routes
+  const routes = user?.role === 'admin' ? adminRoutes : doctorRoutes
+  const consoleLabel = user?.role === 'admin' ? "Admin Console" : "Doctor Console"
 
   return (
     <div className={cn("pb-12 min-h-screen border-r bg-background", className)}>
@@ -51,7 +51,7 @@ export function Sidebar({ className }: { className?: string }) {
           
           <div className="space-y-1">
             <h3 className="mb-2 px-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-              Doctor Console
+              {consoleLabel}
             </h3>
             {routes.map((route) => (
               <Link

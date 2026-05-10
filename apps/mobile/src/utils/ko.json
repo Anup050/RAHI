@@ -1,0 +1,22 @@
+{
+  "welcome": "안녕하세요",
+  "next_pill": "다음 약",
+  "emergency": "긴급 전화",
+  "home": "홈",
+  "symptoms": "증상 확인",
+  "reminders": "알림",
+  "profile": "프로필",
+  "language": "언어",
+  "switch_lang": "언어 변경",
+  "mark_taken": "복용 완료로 표시",
+  "due_at": "복용 시간",
+  "offline_mode": "오프라인 - 캐시된 데이터 표시 중",
+  "diagnose_now": "지금 진단",
+  "consulting_doctor": "AI 의사 상담 중...",
+  "risk_low": "저위험",
+  "risk_high": "고위험",
+  "book_doctor": "지금 의사 예약",
+  "appointments": "예약",
+  "medical_history": "의료 기록",
+  "no_history": "기록이 없습니다"
+}

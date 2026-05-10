@@ -1,0 +1,22 @@
+{
+  "welcome": "Merhaba",
+  "next_pill": "Sonraki hap",
+  "emergency": "Acil arama",
+  "home": "Ana Sayfa",
+  "symptoms": "Semptomları kontrol et",
+  "reminders": "Hatırlatıcılar",
+  "profile": "Profil",
+  "language": "Dil",
+  "switch_lang": "Dil değiştir",
+  "mark_taken": "Alındı olarak işaretle",
+  "due_at": "Alım saati",
+  "offline_mode": "Çevrimdışısınız - Önbelleğe alınan veriler gösteriliyor",
+  "diagnose_now": "Şimdi teşhis et",
+  "consulting_doctor": "Yapay zeka doktorla görüşülüyor...",
+  "risk_low": "Düşük risk",
+  "risk_high": "Yüksek risk",
+  "book_doctor": "Şimdi doktor rezerve et",
+  "appointments": "Randevular",
+  "medical_history": "Tıbbi geçmiş",
+  "no_history": "Geçmiş bulunamadı"
+}

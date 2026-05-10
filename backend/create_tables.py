@@ -8,7 +8,7 @@ print("STARTING TABLE CREATION", flush=True)
 
 from db.session import engine
 from db.base import Base
-from models.sql_models import User, Appointment, Prescription  # Import models to register them with Base
+from models.sql_models import User, Appointment, Prescription, Notification  # Import models to register them with Base
 
 async def init_tables():
     print("Creating tables...")

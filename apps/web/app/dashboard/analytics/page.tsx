@@ -1,9 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { 
     LineChart, 
@@ -21,33 +22,63 @@ import {
     Legend
 } from 'recharts'
 
-const INFLOW_DATA = [
-    { name: 'Mon', value: 12 },
-    { name: 'Tue', value: 18 },
-    { name: 'Wed', value: 15 },
-    { name: 'Thu', value: 25 },
-    { name: 'Fri', value: 20 },
-    { name: 'Sat', value: 30 },
-    { name: 'Sun', value: 10 },
-];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-const DIAGNOSIS_DATA = [
-    { name: 'Viral Fever', value: 45 },
-    { name: 'Diabetes', value: 25 },
-    { name: 'Hypertension', value: 20 },
-    { name: 'Other', value: 10 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const AGE_DATA = [
-    { name: '0-18', male: 20, female: 15 },
-    { name: '19-40', male: 35, female: 40 },
-    { name: '41-60', male: 25, female: 20 },
-    { name: '60+', male: 15, female: 25 },
-];
+interface AnalyticsData {
+    total_predictions: number;
+    high_risk_cases: number;
+    avg_confidence: string;
+    active_alerts: number;
+    inflow_data: any[];
+    diagnosis_data: any[];
+    age_data: any[];
+}
 
 export default function AnalyticsPage() {
+    const [data, setData] = useState<AnalyticsData | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await fetch('http://localhost:8000/api/v1/analytics/health-analytics', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                if (res.ok) {
+                    const json = await res.json()
+                    setData(json)
+                }
+            } catch (err) {
+                console.error("Failed to fetch analytics:", err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchAnalytics()
+    }, [])
+
+    if (isLoading) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (!data) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center flex-col space-y-4">
+                <h2 className="text-xl font-bold">Failed to load analytics</h2>
+                <Link href="/dashboard">
+                    <Button>Return to Dashboard</Button>
+                </Link>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center space-x-4">
@@ -68,8 +99,8 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-sm font-medium">Total Predictions</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">1,240</div>
-                        <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                        <div className="text-2xl font-bold">{data.total_predictions}</div>
+                        <p className="text-xs text-muted-foreground">Based on clinical notes</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -77,8 +108,8 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-sm font-medium">High Risk Cases</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-500">45</div>
-                        <p className="text-xs text-muted-foreground">+2 new today</p>
+                        <div className="text-2xl font-bold text-red-500">{data.high_risk_cases}</div>
+                        <p className="text-xs text-muted-foreground">Requires attention</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -86,7 +117,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-sm font-medium">Avg. Confidence</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">94.2%</div>
+                        <div className="text-2xl font-bold">{data.avg_confidence}</div>
                         <p className="text-xs text-muted-foreground">AI model accuracy</p>
                     </CardContent>
                 </Card>
@@ -95,8 +126,8 @@ export default function AnalyticsPage() {
                         <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">3</div>
-                        <p className="text-xs text-muted-foreground">Requires attention</p>
+                        <div className="text-2xl font-bold">{data.active_alerts}</div>
+                        <p className="text-xs text-muted-foreground">System generated</p>
                     </CardContent>
                 </Card>
             </div>
@@ -105,7 +136,6 @@ export default function AnalyticsPage() {
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="demographics">Demographics</TabsTrigger>
-                    <TabsTrigger value="reports">Reports</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -116,7 +146,7 @@ export default function AnalyticsPage() {
                             </CardHeader>
                             <CardContent className="pl-2">
                                 <ResponsiveContainer width="100%" height={350}>
-                                    <LineChart data={INFLOW_DATA}>
+                                    <LineChart data={data.inflow_data}>
                                         <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                                         <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `${value}`} />
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -129,28 +159,35 @@ export default function AnalyticsPage() {
                         <Card className="col-span-3">
                             <CardHeader>
                                 <CardTitle>Diagnosis Distribution</CardTitle>
-                                <CardDescription>Top conditions diagnosed this month.</CardDescription>
+                                <CardDescription>Top conditions diagnosed recently.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={350}>
-                                    <PieChart>
-                                        <Pie
-                                            data={DIAGNOSIS_DATA}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={80}
-                                            fill="#8884d8"
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            {DIAGNOSIS_DATA.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
+                                    {data.diagnosis_data && data.diagnosis_data.length > 0 ? (
+                                        <PieChart>
+                                            <Pie
+                                                data={data.diagnosis_data}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                fill="#8884d8"
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                            >
+                                                {data.diagnosis_data.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend />
+                                        </PieChart>
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center text-muted-foreground">
+                                            No diagnosis data available
+                                        </div>
+                                    )}
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>
@@ -163,7 +200,7 @@ export default function AnalyticsPage() {
                         </CardHeader>
                         <CardContent className="pl-2">
                              <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={AGE_DATA}>
+                                <BarChart data={data.age_data}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                     <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
@@ -171,6 +208,7 @@ export default function AnalyticsPage() {
                                     <Legend />
                                     <Bar dataKey="male" fill="#8884d8" radius={[4, 4, 0, 0]} />
                                     <Bar dataKey="female" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="other" fill="#ffc658" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </CardContent>

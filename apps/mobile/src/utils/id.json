@@ -1,0 +1,22 @@
+{
+  "welcome": "Halo",
+  "next_pill": "Obat berikutnya",
+  "emergency": "Panggilan darurat",
+  "home": "Beranda",
+  "symptoms": "Periksa gejala",
+  "reminders": "Pengingat",
+  "profile": "Profil",
+  "language": "Bahasa",
+  "switch_lang": "Ganti bahasa",
+  "mark_taken": "Tandai sudah diminum",
+  "due_at": "Jadwal minum",
+  "offline_mode": "Anda offline - Menampilkan data yang disimpan",
+  "diagnose_now": "Diagnosa sekarang",
+  "consulting_doctor": "Berkonsultasi dengan dokter AI...",
+  "risk_low": "Risiko rendah",
+  "risk_high": "Risiko tinggi",
+  "book_doctor": "Buat janji dokter sekarang",
+  "appointments": "Janji temu",
+  "medical_history": "Riwayat medis",
+  "no_history": "Tidak ada riwayat tersedia"
+}

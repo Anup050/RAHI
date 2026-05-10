@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { text-align: center; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 20px; }
+        .footer { margin-top: 30px; font-size: 12px; color: #777; text-align: center; }
+        .highlight { color: #0284c7; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: #0284c7;">Consultation Completed</h1>
+        </div>
+        <p>Hello {{ patient_name }},</p>
+        <p>Your consultation with Dr. {{ doctor_name }} has been successfully completed.</p>
+        <p>Thank you for choosing <span class="highlight">RAHI Health</span> for your healthcare needs.</p>
+        <p>We hope you had a good experience. Please feel free to rate your consultation in the app to help us improve our services.</p>
+        <p>Stay healthy!</p>
+        <div class="footer">
+            &copy; {{ current_year }} RAHI Health.
+        </div>
+    </div>
+</body>
+</html>

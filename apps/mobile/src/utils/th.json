@@ -1,0 +1,22 @@
+{
+  "welcome": "สวัสดี",
+  "next_pill": "ยาเม็ดถัดไป",
+  "emergency": "โทรฉุกเฉิน",
+  "home": "หน้าหลัก",
+  "symptoms": "ตรวจอาการ",
+  "reminders": "การแจ้งเตือน",
+  "profile": "โปรไฟล์",
+  "language": "ภาษา",
+  "switch_lang": "เปลี่ยนภาษา",
+  "mark_taken": "ทำเครื่องหมายว่าทานแล้ว",
+  "due_at": "เวลาทาน",
+  "offline_mode": "คุณออฟไลน์อยู่ - กำลังแสดงข้อมูลที่บันทึกไว้",
+  "diagnose_now": "วินิจฉัยตอนนี้",
+  "consulting_doctor": "กำลังปรึกษาแพทย์ AI...",
+  "risk_low": "ความเสี่ยงต่ำ",
+  "risk_high": "ความเสี่ยงสูง",
+  "book_doctor": "จองแพทย์ตอนนี้",
+  "appointments": "การนัดหมาย",
+  "medical_history": "ประวัติการรักษา",
+  "no_history": "ไม่มีประวัติ"
+}

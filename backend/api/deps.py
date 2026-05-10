@@ -37,10 +37,28 @@ async def get_current_user(
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+        
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated by the administrator.",
+        )
+        
     return user
-
-async def get_current_active_doctor(
+ 
+async def get_current_approved_user(
     current_user: User = Depends(get_current_user),
+) -> User:
+    # Security: Ensure doctors are approved by admin before allowing API access
+    if current_user.role == "doctor" and not current_user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your doctor account is pending admin approval. Access is restricted."
+        )
+    return current_user
+ 
+async def get_current_active_doctor(
+    current_user: User = Depends(get_current_approved_user),
 ) -> User:
     if current_user.role != "doctor":
         raise HTTPException(

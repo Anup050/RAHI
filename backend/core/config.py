@@ -5,11 +5,11 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # DATABASE
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    POSTGRES_HOST: str
-    POSTGRES_PORT: int
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "rahi"
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: int = 5432
     
     MONGO_USER: str = ""
     MONGO_PASSWORD: str = ""
@@ -17,9 +17,18 @@ class Settings(BaseSettings):
     MONGO_HOST: str = "localhost"
     MONGO_PORT: int = 27017
     MONGODB_URL: str | None = None
+    DATABASE_URL: str | None = None
+    AI_ENGINE_URL: str = "http://localhost:8001"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.DATABASE_URL:
+            # Handle potential postgres:// vs postgresql:// issue for SQLAlchemy
+            if self.DATABASE_URL.startswith("postgres://"):
+                return self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+            if not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
+                 return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return self.DATABASE_URL
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
     @property
@@ -33,7 +42,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
 
     # Security
-    SECRET_KEY: str
+    SECRET_KEY: str = "supersecretkeyforrahihealthcareplatform2024"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 

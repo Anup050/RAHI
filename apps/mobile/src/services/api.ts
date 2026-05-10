@@ -23,4 +23,15 @@ api.interceptors.request.use(
     }
 );
 
+// Add a response interceptor to handle 401 and 403 errors
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            await storageService.clearAuth();
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

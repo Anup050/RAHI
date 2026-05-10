@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/context/AuthContext"
 import { useGlobalSearch } from "@/hooks/useDashboard"
+import { useNotifications } from "@/hooks/useNotifications"
 import Link from "next/link"
 
 import { useRouter } from "next/navigation"
@@ -27,6 +28,21 @@ export function Header() {
   
   // Debounce could be handled here or in hook (hook has min length check)
   const { data: searchResults, isLoading: isSearching } = useGlobalSearch(searchQuery);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.max(0, Math.floor(diffMs / 60000));
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
 
   const getInitials = (name: string) => {
     if (!name) return "DR";
@@ -85,34 +101,53 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600" />
+            {unreadCount > 0 && (
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+            )}
             <span className="sr-only">Notifications</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[300px]">
-          <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <div className="max-h-[300px] overflow-y-auto">
-             <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-1 p-3">
-                <div className="font-medium text-sm">New Lab Result</div>
-                <div className="text-xs text-muted-foreground">Blood work for Rohan Das is available.</div>
-                <div className="text-[10px] text-muted-foreground mt-1">2 mins ago</div>
-             </DropdownMenuItem>
-             <DropdownMenuSeparator />
-             <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-1 p-3">
-                <div className="font-medium text-sm">Appointment Request</div>
-                <div className="text-xs text-muted-foreground">Priya Patel requested a video consult.</div>
-                <div className="text-[10px] text-muted-foreground mt-1">1 hour ago</div>
-             </DropdownMenuItem>
-             <DropdownMenuSeparator />
-             <DropdownMenuItem className="cursor-pointer flex flex-col items-start gap-1 p-3">
-                <div className="font-medium text-sm">System Update</div>
-                <div className="text-xs text-muted-foreground">Platform maintenance scheduled for Sunday.</div>
-                <div className="text-[10px] text-muted-foreground mt-1">1 day ago</div>
-             </DropdownMenuItem>
+          <div className="flex items-center justify-between px-4 py-2 border-b">
+            <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
+            {unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-auto p-0 text-[10px] text-primary hover:bg-transparent"
+                onClick={() => markAllAsRead.mutate()}
+              >
+                Mark all as read
+              </Button>
+            )}
+          </div>
+          <div className="max-h-[400px] overflow-y-auto">
+             {notifications && notifications.length > 0 ? (
+               notifications.map((n, i) => (
+                 <div key={n.id}>
+                    <DropdownMenuItem 
+                      className={`cursor-pointer flex flex-col items-start gap-1 p-3 focus:bg-muted ${!n.is_read ? 'bg-primary/5' : ''}`}
+                      onClick={() => !n.is_read && markAsRead.mutate(n.id)}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className={`font-medium text-sm ${!n.is_read ? 'text-primary' : ''}`}>{n.title}</div>
+                        {!n.is_read && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      </div>
+                      <div className="text-xs text-muted-foreground line-clamp-2">{n.message}</div>
+                      <div className="text-[10px] text-muted-foreground mt-1">{formatTime(n.created_at)}</div>
+                    </DropdownMenuItem>
+                    {i < notifications.length - 1 && <DropdownMenuSeparator />}
+                 </div>
+               ))
+             ) : (
+               <div className="py-8 text-center text-sm text-muted-foreground">No notifications</div>
+             )}
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer justify-center text-primary font-medium">
+          <DropdownMenuItem 
+            className="cursor-pointer justify-center text-primary font-medium focus:text-primary"
+            onClick={() => router.push('/notifications')}
+          >
              View All Notifications
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -131,10 +166,7 @@ export function Header() {
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer w-full">
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer w-full">
-             Settings
+            <User className="mr-2 h-4 w-4" /> My Profile
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => logout()} className="cursor-pointer text-red-600 focus:text-red-700">

@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchCurrentUser = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/users/me', {
+      const res = await fetch('/api/users/me', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -48,13 +48,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (token: string, userData: any) => {
     localStorage.setItem('token', token);
-    // If userData is provided (optional optimization), set it, otherwise fetch
     if (userData) {
         setUser(userData);
+        setIsLoading(false);
+        router.replace('/dashboard');
     } else {
-        fetchCurrentUser(token);
+        fetchCurrentUser(token).then(() => {
+            router.replace('/dashboard');
+        });
     }
-    router.push('/dashboard');
   };
 
   const logout = () => {
