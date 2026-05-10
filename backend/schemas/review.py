@@ -8,3 +8,6 @@ class ReviewResponse(BaseModel):
     comment: Optional[str] = None
     patient_name: str
     created_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
