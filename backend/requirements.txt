@@ -9,8 +9,8 @@ passlib[bcrypt]
 email-validator
 fastapi-mail>=1.4.1
 python-multipart
-motor
-beanie
+motor==3.3.2
+beanie==2.1.0
 httpx
 apscheduler
 pytest
