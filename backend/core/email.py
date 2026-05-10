@@ -23,7 +23,8 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True,
-    TEMPLATE_FOLDER=TEMPLATE_FOLDER
+    TEMPLATE_FOLDER=TEMPLATE_FOLDER,
+    MAIL_FROM_NAME=settings.MAIL_FROM_NAME
 )
 
 async def send_otp_email(email_to: EmailStr, otp_code: str, background_tasks: BackgroundTasks, subject: str = "RAHI Health - Login Verification"):
@@ -297,6 +298,8 @@ async def send_admin_new_registration_notification(
 async def send_email_template(fm: FastMail, message: MessageSchema, template_name: str):
     try:
         await fm.send_message(message, template_name=template_name)
-        logger.info(f"✅ Email {template_name} sent successfully")
+        logger.info(f"✅ Email {template_name} sent successfully to {message.recipients}")
     except Exception as e:
-        logger.error(f"❌ Failed to send email {template_name}: {str(e)}")
+        logger.error(f"❌ Failed to send email {template_name}. Error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
