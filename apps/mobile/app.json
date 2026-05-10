@@ -22,8 +22,11 @@
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
-        "MODIFY_AUDIO_SETTINGS"
-      ]
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anup_dubey09.rahipatient"
     },
     "plugins": [
       [
@@ -36,6 +39,11 @@
     ],
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "79ec8808-4409-4d61-90d1-44465286c050"
+      }
     }
   }
 }

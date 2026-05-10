@@ -34,7 +34,7 @@ export default function SignupPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/register-request', {
+      const res = await fetch('/api/auth/register-request', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -67,7 +67,7 @@ export default function SignupPage() {
       setIsLoading(true);
 
       try {
-          const res = await fetch('http://localhost:8000/api/v1/auth/register-verify', {
+          const res = await fetch('/api/auth/register-verify', {
             method: 'POST',
              headers: {
                 'Content-Type': 'application/json'
@@ -118,7 +118,7 @@ export default function SignupPage() {
         formDataUpload.append('govt_id', govtId);
         formDataUpload.append('clinic_id', clinicId);
 
-        const res = await fetch('http://localhost:8000/api/v1/auth/upload-verification', {
+        const res = await fetch('/api/auth/upload-verification', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`

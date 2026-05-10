@@ -58,7 +58,7 @@ export default function SettingsPage() {
     setIsSaving(true)
     try {
         const token = localStorage.getItem('token')
-        const res = await fetch('http://localhost:8000/api/v1/users/me', {
+        const res = await fetch('/api/users/me', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export default function SettingsPage() {
       
       try {
         const token = localStorage.getItem('token')
-        const res = await fetch('http://localhost:8000/api/v1/users/me/password', {
+        const res = await fetch('/api/users/me/password', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

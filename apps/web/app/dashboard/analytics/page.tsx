@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
         const fetchAnalytics = async () => {
             try {
                 const token = localStorage.getItem('token')
-                const res = await fetch('http://localhost:8000/api/v1/analytics/health-analytics', {
+                const res = await fetch('/api/analytics/health-analytics', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
