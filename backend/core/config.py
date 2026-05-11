@@ -50,9 +50,10 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
     MAIL_FROM: str = "rahi.healthcare.app@gmail.com"
-    MAIL_PORT: int = 2525
+    MAIL_PORT: int = 587
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_FROM_NAME: str = "RAHI Healthcare"
+    RESEND_API_KEY: str = ""
 
     # SMS
     SMS_PROVIDER: str = "mock" # mock or twilio
