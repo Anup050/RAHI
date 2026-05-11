@@ -2,6 +2,16 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { userService } from './user';
+import api from './api';
+
+export interface NotificationItem {
+    id: number;
+    title: string;
+    message: string;
+    type: 'appointment' | 'system' | 'call';
+    is_read: boolean;
+    created_at: string;
+}
 
 export const notificationService = {
     registerForPushNotificationsAsync: async () => {
@@ -31,7 +41,7 @@ export const notificationService = {
         }
 
         if (Platform.OS === 'android') {
-            Notifications.setNotificationChannelAsync('default', {
+            await Notifications.setNotificationChannelAsync('default', {
                 name: 'default',
                 importance: Notifications.AndroidImportance.MAX,
                 vibrationPattern: [0, 250, 250, 250],
@@ -50,5 +60,32 @@ export const notificationService = {
                 shouldSetBadge: false,
             }),
         });
+    },
+
+    getNotifications: async (): Promise<NotificationItem[]> => {
+        try {
+            const { data } = await api.get('/notifications');
+            return data;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    },
+
+    markAsRead: async (id: number): Promise<void> => {
+        try {
+            await api.post(`/notifications/${id}/read`);
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    },
+
+    markAllAsRead: async (): Promise<void> => {
+        try {
+            await api.post('/notifications/read-all');
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+        }
     }
 };
+
