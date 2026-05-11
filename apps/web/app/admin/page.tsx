@@ -239,40 +239,42 @@ export default function AdminPage() {
                                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                     </div>
                                 ) : stats?.recent_appointments && stats.recent_appointments.length > 0 ? (
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-slate-50 border-b border-slate-100">
-                                            <tr>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Time</th>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient</th>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient ID</th>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor</th>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor ID</th>
-                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {stats.recent_appointments.map((apt: any) => (
-                                                <tr key={apt.id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                                        {isNaN(new Date(apt.time).getTime()) ? apt.time : new Date(apt.time).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900">{apt.patient_name || "Patient"}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-mono">{apt.patient_rahi_id || 'N/A'}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{apt.doctor_name || "Unassigned"}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-mono">{apt.doctor_rahi_id || 'N/A'}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                            apt.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                                                            apt.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 
-                                                            'bg-blue-100 text-blue-800'
-                                                        }`}>
-                                                            {apt.status}
-                                                        </span>
-                                                    </td>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-slate-50 border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Time</th>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient</th>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient ID</th>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor</th>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor ID</th>
+                                                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {stats.recent_appointments.map((apt: any) => (
+                                                    <tr key={apt.id} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                                            {isNaN(new Date(apt.time).getTime()) ? apt.time : new Date(apt.time).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900">{apt.patient_name || "Patient"}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-mono">{apt.patient_rahi_id || 'N/A'}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{apt.doctor_name || "Unassigned"}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-mono">{apt.doctor_rahi_id || 'N/A'}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                apt.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                                                                apt.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 
+                                                                'bg-blue-100 text-blue-800'
+                                                            }`}>
+                                                                {apt.status}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 ) : (
                                     <div className="text-center py-8 text-muted-foreground">No recent activity</div>
                                 )}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Stethoscope, Lock, Mail, Loader2, ArrowRight } from 'lucide-react';
+import { Stethoscope, Lock, Mail, Loader2, ArrowRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -69,7 +69,13 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 relative">
+        <div className="absolute top-8 left-8">
+          <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to Home
+          </Link>
+        </div>
         <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign in to your account</h1>
