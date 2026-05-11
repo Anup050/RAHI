@@ -147,6 +147,7 @@ def predict(request: SymptomRequest):
         raise HTTPException(status_code=500, detail="Internal AI Engine error during processing.")
 
 @app.get("/")
+@app.get("/health")
 def health_check():
     return {
         "status": "RAHI AI Engine Operational",

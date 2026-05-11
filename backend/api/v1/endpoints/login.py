@@ -11,6 +11,7 @@ from core import security, email
 from core.config import settings
 from models.sql_models import User
 from schemas import token as token_schemas
+from core.ai_warmup import trigger_ai_warmup
 
 ALLOWED_EMAIL = "dubeyanupkumar349@gmail.com"
 
@@ -59,11 +60,14 @@ async def request_otp(
     # Send Email
     await email.send_otp_email(login_in.email, otp_code, background_tasks)
 
+    trigger_ai_warmup(background_tasks)
+
     return {"message": "OTP sent to email", "status": "sent"}
 
 @router.post("/login-verify", response_model=token_schemas.Token)
 async def verify_otp(
     verify_in: LoginVerify,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(deps.get_db),
 ) -> Any:
     """
@@ -89,6 +93,8 @@ async def verify_otp(
     user.otp_expires_at = None
     db.add(user)
     await db.commit()
+
+    trigger_ai_warmup(background_tasks)
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {

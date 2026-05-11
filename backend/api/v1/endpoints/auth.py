@@ -14,6 +14,7 @@ from core import security, email as email_utils
 from core.config import settings
 from models.sql_models import User
 from schemas import user as user_schemas, token as token_schemas
+from core.ai_warmup import trigger_ai_warmup
 
 ADMIN_EMAIL = "rahi.healthcare.app@gmail.com"
 
@@ -31,7 +32,8 @@ class ResetPassword(BaseModel):
 @router.post("/login", response_model=token_schemas.Token)
 async def login_access_token(
     db: AsyncSession = Depends(deps.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends()
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    background_tasks: BackgroundTasks = None
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
@@ -49,6 +51,9 @@ async def login_access_token(
         )
         
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    if background_tasks:
+        trigger_ai_warmup(background_tasks)
+
     return {
         "access_token": security.create_access_token(
             user.id, expires_delta=access_token_expires
@@ -126,6 +131,7 @@ async def register_request(
 
     await db.commit()
     await email_utils.send_otp_email(user_in.email, otp_code, background_tasks, subject="RAHI Health - Registration Verification")
+    trigger_ai_warmup(background_tasks)
     
     return {"message": "OTP sent to email", "status": "sent"}
 
@@ -301,6 +307,7 @@ async def login_request(
     await db.commit()
 
     await email_utils.send_otp_email(email, otp_code, background_tasks, subject="RAHI Health - Login OTP")
+    trigger_ai_warmup(background_tasks)
 
     return {"message": "OTP sent to email", "status": "sent"}
 
@@ -308,7 +315,8 @@ async def login_request(
 async def login_verify(
     *,
     db: AsyncSession = Depends(deps.get_db),
-    verify_in: OTPVerify
+    verify_in: OTPVerify,
+    background_tasks: BackgroundTasks
 ) -> Any:
     """
     Verify login OTP and return token.
@@ -329,6 +337,8 @@ async def login_verify(
     user.otp_expires_at = None
     db.add(user)
     await db.commit()
+    
+    trigger_ai_warmup(background_tasks)
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
@@ -383,3 +393,11 @@ async def upload_verification(
         'govt_id_url': current_user.govt_id_url,
         'clinic_id_url': current_user.clinic_id_url
     }
+
+@router.get("/warm-ai")
+async def warm_ai(background_tasks: BackgroundTasks) -> Any:
+    """
+    Manually trigger AI engine warmup (used by frontend on app start).
+    """
+    trigger_ai_warmup(background_tasks)
+    return {"status": "warmup_triggered"}
