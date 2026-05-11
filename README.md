@@ -1,47 +1,79 @@
-# RAHI (Rural AI Healthcare Interface)
+# RAHI: Rural AI Healthcare Interface 🏥
 
-**RAHI** is a full-stack hybrid healthcare system designed for rural India, focusing on low-connectivity utility, AI triage, and multilingual support.
+**RAHI** is a comprehensive, production-ready healthcare ecosystem designed specifically for rural and underserved regions in India. It bridges the gap between urban medical expertise and rural accessibility through AI-driven triage, multilingual interfaces, and low-bandwidth telemedicine.
 
-## 🏗 System Architecture (Monorepo)
+---
 
-| Scope | Service | Tech Stack | Location |
+## ✨ Key Features
+
+- 🤖 **AI-Powered Triage**: Real-time symptom assessment using an integrated Scikit-Learn prediction engine.
+- 📹 **In-App Video Consultations**: Seamless, integrated telemedicine sessions without external app redirects.
+- 🚨 **Emergency Alert System**: Priority patient-to-doctor alerting with real-time system and email notifications.
+- 🌐 **Hyper-Localized (11 Languages)**: Full i18n support for 11 Indian regional languages (Hindi, Marathi, Bengali, Tamil, etc.).
+- 🔔 **Smart Notifications**: Cross-platform notification delivery for appointments, emergencies, and system updates.
+- 📧 **Automated Communications**: Professional email delivery for authentication and booking confirmations via Resend API.
+- 📉 **Analytics Dashboard**: Real-time health metrics and appointment tracking for doctors and administrators.
+
+---
+
+## 🏗 System Architecture
+
+The RAHI ecosystem is built as a highly decoupled monorepo for scalability and ease of deployment.
+
+| Layer | Service | Tech Stack | Directory |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | Doctor Dashboard | Next.js (Web) | `apps/web` |
-| **Frontend** | Patient App | React Native (Expo) | `apps/mobile` |
-| **Services** | Core API | FastAPI | `services/api` |
-| **Services** | AI Engine | Scikit-Learn | `services/ai-engine` |
+| **Web** | Doctor Dashboard | Next.js, Tailwind CSS | `apps/web` |
+| **Mobile** | Patient App | React Native, Expo, NativeWind | `apps/mobile` |
+| **Core API** | Backend Service | FastAPI, SQLAlchemy, Pydantic | `backend/` |
+| **AI Hub** | Intelligence Engine | Scikit-Learn, Random Forest | `ai-engine/` |
+| **Database** | Persistent Storage | Neon PostgreSQL & MongoDB | Cloud/Managed |
 | **Infra** | Orchestration | Docker & Nginx | `infrastructure/` |
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: [Next.js](https://nextjs.org/) (Web), [Expo](https://expo.dev/) (Mobile)
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
+- **Database**: [Neon Postgres](https://neon.tech/) (SQL), [MongoDB](https://www.mongodb.com/) (NoSQL)
+- **AI/ML**: [Scikit-Learn](https://scikit-learn.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) / [NativeWind](https://www.nativewind.dev/)
+- **Communications**: [Resend](https://resend.com/) (Email), [Lucide](https://lucide.dev/) (Icons)
+
+---
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- Docker Desktop
-- Node.js (v18+) & Python (v3.10+)
+- **Docker Desktop**
+- **Node.js** (v18+)
+- **Python** (v3.10+)
 
-### 2. Start the Ecosystem (Docker)
-We use a centralized makefile for orchestration (Windows users can inspect `Makefile` commands or run directly).
+### 2. Orchestrated Launch (Docker)
+The easiest way to start the entire ecosystem is via the provided Makefile:
 
 ```bash
-# Start all services (Backend, AI, Web, Database)
+# Spin up all services (Web, Mobile Web, Backend, AI Engine, DB)
 make up
 
-# View logs
+# View real-time logs
 make logs
 
-# Stop services
+# Shut down the ecosystem
 make down
 ```
 
-### 3. Manual Development
-If you prefer running services locally without Docker:
+### 3. Manual Development Setup
 
-**Backend:**
+If you wish to run services independently for development:
+
+**Backend API:**
 ```bash
-cd services/api
+cd backend
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate  # venv\Scripts\activate on Windows
 pip install -r requirements.txt
-uvicorn main:app --reload
+python main.py
 ```
 
 **Web Dashboard:**
@@ -51,9 +83,19 @@ npm install
 npm run dev
 ```
 
-**Mobile App:**
+**Mobile Application:**
 ```bash
 cd apps/mobile
 npm install
 npx expo start
 ```
+
+---
+
+## 📜 Project Execution & Status
+For a detailed breakdown of the development phases and security hardening steps, refer to:
+- [RAHI Project Execution Log](RAHI_PROJECT_EXECUTION.md)
+- [Manual Setup Guide](manual_setup.md)
+
+---
+*RAHI - Healing Rural India with Intelligence and Inclusion.*
