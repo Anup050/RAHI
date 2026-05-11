@@ -58,7 +58,7 @@ export function DoctorsSection() {
             </div>
             
             {/* Floating Card */}
-            <div className="absolute -bottom-8 -left-4 md:-bottom-12 md:-left-12 bg-card p-4 md:p-6 rounded-2xl shadow-xl max-w-[250px] md:max-w-xs w-full border">
+            <div className="absolute -bottom-6 -left-2 md:-bottom-12 md:-left-12 bg-card p-3 md:p-6 rounded-2xl shadow-xl max-w-[200px] md:max-w-xs w-full border">
                 <h4 className="font-bold mb-1 text-sm md:text-base">Available Doctors</h4>
                 <p className="text-xs text-muted-foreground mb-4">Choose Doctors</p>
                 

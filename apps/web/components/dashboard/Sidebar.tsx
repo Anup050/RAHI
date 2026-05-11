@@ -30,7 +30,7 @@ const adminRoutes = [
   { href: "/dashboard", label: "Doctor View", icon: LayoutDashboard },
 ]
 
-export function Sidebar({ className }: { className?: string }) {
+export function Sidebar({ className, onLinkClick }: { className?: string, onLinkClick?: () => void }) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   
@@ -57,6 +57,7 @@ export function Sidebar({ className }: { className?: string }) {
               <Link
                 key={route.href}
                 href={route.href}
+                onClick={onLinkClick}
                 className={cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
                   pathname === route.href || pathname?.startsWith(route.href + "/") 
@@ -78,13 +79,17 @@ export function Sidebar({ className }: { className?: string }) {
             <div className="space-y-1">
                  <Link
                     href="/settings"
+                    onClick={onLinkClick}
                     className="flex items-center rounded-md px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
                     <Settings className="mr-3 h-4 w-4" />
                     Settings
                 </Link>
                 <button
-                    onClick={() => logout()}
+                    onClick={() => {
+                        logout();
+                        if (onLinkClick) onLinkClick();
+                    }}
                     className="w-full flex items-center rounded-md px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors text-left"
                 >
                     <LogOut className="mr-3 h-4 w-4" />

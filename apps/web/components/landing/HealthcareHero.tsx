@@ -17,28 +17,28 @@ export function HealthcareHero() {
             <span className="text-foreground">5.0 (980 Reviews)</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-            Bridging the Gap: <br />
-            Urban Care for <br />
+          <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+            Bridging the Gap: <br className="hidden md:block" />
+            Urban Care for <br className="hidden md:block" />
             Rural India
           </h1>
 
-          <p className="text-xl text-muted-foreground max-w-[500px]">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-[500px]">
              RAHI (Rural AI Healthcare Interface) combines advanced AI with telemedicine to bring world-class diagnostics to every village.
           </p>
 
-          <div className="flex items-center gap-4 pt-4">
-            <Link href="#contact">
-              <Button size="lg" className="rounded-full h-12 px-8 text-base">
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full">
+            <Link href="#contact" className="w-full sm:w-auto">
+              <Button size="lg" className="rounded-full h-12 px-8 text-base w-full">
                 Book a call
               </Button>
             </Link>
-            <Link href="/download">
-              <Button size="lg" variant="outline" className="rounded-full h-12 px-8 text-base border-primary text-primary hover:bg-primary/5">
+            <Link href="/download" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="rounded-full h-12 px-8 text-base border-primary text-primary hover:bg-primary/5 w-full">
                 Download App
               </Button>
             </Link>
-            <Button variant="ghost" size="lg" className="rounded-full h-12 px-6 text-base gap-2 hover:bg-secondary">
+            <Button variant="ghost" size="lg" className="rounded-full h-12 px-6 text-base gap-2 hover:bg-secondary hidden sm:flex">
               <div className="bg-background rounded-full p-1 border shadow-sm">
                 <Play className="h-3 w-3 fill-foreground ml-0.5" />
               </div>

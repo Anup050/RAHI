@@ -69,11 +69,12 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 relative">
-        <div className="absolute top-8 left-8">
-          <Link href="/" className="flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50 relative">
+        <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
+          <Link href="/" className="flex items-center text-xs sm:text-sm font-medium text-gray-500 hover:text-primary transition-colors">
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back to Home
+            <span className="hidden xs:inline">Back to Home</span>
+            <span className="xs:hidden">Home</span>
           </Link>
         </div>
         <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">

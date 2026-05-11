@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Search, User, Calendar, Loader2 } from "lucide-react"
+import { Bell, Search, User, Calendar, Loader2, Menu } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,7 +20,7 @@ import Link from "next/link"
 
 import { useRouter } from "next/navigation"
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,7 +50,11 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 shadow-sm">
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
+        <Menu className="h-5 w-5" />
+      </Button>
+      
       <div className="w-full flex-1 relative">
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="relative">
