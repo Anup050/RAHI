@@ -15,6 +15,7 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (!isLoading) {
@@ -34,7 +35,6 @@ export default function DashboardLayout({
     );
   }
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <div className="flex h-screen overflow-hidden bg-background relative">
