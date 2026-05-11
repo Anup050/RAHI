@@ -35,7 +35,7 @@ async def _send_via_resend(email_to: str, subject: str, template_name: str, temp
                     "Content-Type": "application/json",
                 },
                 json={
-                    "from": f"{settings.MAIL_FROM_NAME} <{settings.MAIL_FROM}>",
+                    "from": "RAHI Healthcare <noreply@rahihealth.tech>",
                     "to": [email_to],
                     "subject": subject,
                     "html": html_content,
