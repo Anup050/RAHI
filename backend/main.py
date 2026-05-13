@@ -45,16 +45,29 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # ── AI Engine Wake-Up & Keep-Alive ──────────────────────────────────
 async def wake_ai_engine():
-    """Ping the AI Engine health endpoint to wake it from Render cold sleep."""
+    """Ping the AI Engine with retries until it wakes from Render cold sleep."""
     ai_url = settings.AI_ENGINE_URL.rstrip("/")
     health_url = f"{ai_url}/health"
-    logger.info(f"Waking AI Engine at {health_url} ...")
-    try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            resp = await client.get(health_url)
-            logger.info(f"AI Engine responded: {resp.status_code} — {resp.json()}")
-    except Exception as e:
-        logger.warning(f"AI Engine wake-up ping failed (it may still be starting): {e}")
+    max_retries = 8
+    delay = 15  # seconds between retries
+
+    logger.info(f"Waking AI Engine at {health_url} (up to {max_retries} attempts) ...")
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for attempt in range(1, max_retries + 1):
+            try:
+                resp = await client.get(health_url)
+                if resp.status_code == 200:
+                    logger.info(f"AI Engine is LIVE (attempt {attempt}): {resp.json()}")
+                    return  # Success — exit early
+                else:
+                    logger.warning(f"AI Engine returned {resp.status_code} (attempt {attempt}), retrying in {delay}s ...")
+            except Exception as e:
+                logger.warning(f"AI Engine ping failed (attempt {attempt}): {e}")
+
+            if attempt < max_retries:
+                await asyncio.sleep(delay)
+
+    logger.error("AI Engine did not wake up after all retries. Predictions may fail until it starts.")
 
 
 async def keep_ai_engine_alive():
@@ -77,8 +90,8 @@ async def startup_event():
     await init_mongo()
     start_scheduler()
 
-    # Wake AI Engine and start the keep-alive background task
-    await wake_ai_engine()
+    # Wake AI Engine (background — doesn't block backend from going live)
+    asyncio.create_task(wake_ai_engine())
     asyncio.create_task(keep_ai_engine_alive())
 
 
