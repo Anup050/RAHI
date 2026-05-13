@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from core.config import settings
+import asyncio
+import logging
+import httpx
+
+logger = logging.getLogger("rahi-backend")
 
 app = FastAPI(title="RAHI Backend", version="0.1.0")
  
@@ -37,10 +42,44 @@ from jobs.scheduler import start_scheduler
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+
+# ── AI Engine Wake-Up & Keep-Alive ──────────────────────────────────
+async def wake_ai_engine():
+    """Ping the AI Engine health endpoint to wake it from Render cold sleep."""
+    ai_url = settings.AI_ENGINE_URL.rstrip("/")
+    health_url = f"{ai_url}/health"
+    logger.info(f"Waking AI Engine at {health_url} ...")
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.get(health_url)
+            logger.info(f"AI Engine responded: {resp.status_code} — {resp.json()}")
+    except Exception as e:
+        logger.warning(f"AI Engine wake-up ping failed (it may still be starting): {e}")
+
+
+async def keep_ai_engine_alive():
+    """Background loop: ping the AI Engine every 5 minutes to prevent Render sleep."""
+    ai_url = settings.AI_ENGINE_URL.rstrip("/")
+    health_url = f"{ai_url}/health"
+    while True:
+        await asyncio.sleep(300)  # 5 minutes
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.get(health_url)
+                logger.debug(f"AI Engine keep-alive: {resp.status_code}")
+        except Exception as e:
+            logger.warning(f"AI Engine keep-alive ping failed: {e}")
+# ────────────────────────────────────────────────────────────────────
+
+
 @app.on_event("startup")
 async def startup_event():
     await init_mongo()
     start_scheduler()
+
+    # Wake AI Engine and start the keep-alive background task
+    await wake_ai_engine()
+    asyncio.create_task(keep_ai_engine_alive())
 
 
 @app.get("/")
