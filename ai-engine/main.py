@@ -138,12 +138,13 @@ async def predict(request: SymptomRequest):
 @app.get("/")
 @app.get("/health")
 def health_check():
+    from datetime import datetime
     return {
         "status": "RAHI AI Engine Operational",
         "model_loaded": model is not None,
         "is_loading": is_loading,
         "version": "1.1.1",
-        "timestamp": pd.Timestamp.now().isoformat() if 'pd' in locals() else None
+        "timestamp": datetime.now().isoformat()
     }
 
 
