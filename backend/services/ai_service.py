@@ -71,9 +71,9 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
     predict_url = f"{ai_url}/predict"
     payload = {"symptoms": symptoms, "text": symptoms}
 
-    max_attempts = 4
+    max_attempts = 6
     # Long timeout: Render cold start can take 30-60 s
-    client_timeout = httpx.Timeout(connect=30.0, read=60.0, write=10.0, pool=10.0)
+    client_timeout = httpx.Timeout(connect=30.0, read=60.0, write=15.0, pool=10.0)
 
     async with httpx.AsyncClient(timeout=client_timeout, follow_redirects=True) as client:
         for attempt in range(1, max_attempts + 1):
@@ -88,13 +88,13 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
                 logger.warning(f"AI Engine connection failed (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
                     asyncio.create_task(_ensure_ai_engine_awake())
-                    await asyncio.sleep(5)
+                    # Wait: 5, 10, 15, 20, 20...
+                    await asyncio.sleep(min(5 * attempt, 20))
                     continue
 
             except httpx.ReadTimeout as exc:
                 logger.warning(f"AI Engine read timeout (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
-                    # Render might be starting up but slow
                     await asyncio.sleep(5)
                     continue
 
@@ -102,15 +102,13 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
                 status = exc.response.status_code
                 logger.warning(f"AI Engine status {status} (attempt {attempt}/{max_attempts})")
                 
-                # 502, 503, 504 = transient gateway/load errors during cold start
                 if status in [502, 503, 504] and attempt < max_attempts:
                     logger.info(f"Transient {status} detected, triggering background wake-up...")
                     asyncio.create_task(_ensure_ai_engine_awake())
-                    # Wait progressively before retrying: 5s, 10s, 15s
-                    await asyncio.sleep(5 * attempt)
+                    # Delays: 5, 10, 15, 20, 20... total wait ~70-90s
+                    await asyncio.sleep(min(5 * attempt, 20))
                     continue
                 
-                # If we get a 4xx or a 500 (actual app error), return the error
                 return {
                     "predictions": [],
                     "message": "AI Service error.",
@@ -120,13 +118,13 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
             except Exception as exc:
                 logger.error(f"Unexpected AI Engine error (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(5)
                     continue
 
     # All attempts exhausted
     logger.error("AI Engine unreachable after all retry attempts.")
     return {
         "predictions": [],
-        "message": "AI Service is currently warming up. This usually takes 30-60 seconds on the first request.",
+        "message": "AI Service is still warming up. This can take up to 90 seconds on the first request of the day.",
         "error": "AI Engine cold start exceeded timeout"
     }
