@@ -40,8 +40,12 @@ async def wake_ai_engine():
             try:
                 resp = await client.get(health_url)
                 if resp.status_code == 200:
-                    logger.info(f"✅ AI Engine is LIVE (attempt {attempt}): {resp.json()}")
-                    return True
+                    data = resp.json()
+                    if data.get("model_loaded") is True:
+                        logger.info(f"✅ AI Engine is LIVE & Model Loaded (attempt {attempt})")
+                        return True
+                    else:
+                        logger.info(f"⏳ AI Engine is up but Model still loading (attempt {attempt}) ...")
                 else:
                     logger.warning(f"AI Engine returned {resp.status_code} (attempt {attempt})")
             except Exception as e:

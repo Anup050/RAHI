@@ -12,11 +12,14 @@ _ai_engine_ready = False
 
 
 async def _wake_ai_engine_once(client: httpx.AsyncClient, health_url: str) -> bool:
-    """Single attempt to ping the AI Engine health endpoint."""
+    """Single attempt to ping the AI Engine health endpoint and check if model is ready."""
     try:
         resp = await client.get(health_url)
         if resp.status_code == 200:
-            return True
+            data = resp.json()
+            # With lazy loading, we must check if the model is actually ready
+            if data.get("model_loaded") is True:
+                return True
     except Exception:
         pass
     return False
