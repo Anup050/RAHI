@@ -3,9 +3,6 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
-import joblib
-import pandas as pd
-import numpy as np
 import os
 
 # Configure Logging
@@ -31,6 +28,9 @@ async def load_model_artifacts():
     is_loading = True
     logger.info("📦 Loading RAHI AI Model artifacts in background...")
     try:
+        # Import heavy libraries here to speed up main process startup
+        import joblib
+        
         # Give the system a moment to breathe before heavy unpickling
         await asyncio.sleep(1) 
         
@@ -62,7 +62,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="RAHI AI Engine", 
-    version="1.1.0",
+    version="1.1.1",
     lifespan=lifespan
 )
 
@@ -82,6 +82,9 @@ async def predict(request: SymptomRequest):
         raise HTTPException(status_code=503, detail="AI Model not initialized. Retrying load...")
 
     try:
+        import pandas as pd
+        import numpy as np
+        
         req_data = request.model_dump() if hasattr(request, "model_dump") else request.dict()
         user_text = req_data.get("text") or req_data.get("symptoms") or ""
         
@@ -139,6 +142,8 @@ def health_check():
         "status": "RAHI AI Engine Operational",
         "model_loaded": model is not None,
         "is_loading": is_loading,
-        "version": "1.1.0"
+        "version": "1.1.1",
+        "timestamp": pd.Timestamp.now().isoformat() if 'pd' in locals() else None
     }
+
 

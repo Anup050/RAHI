@@ -31,11 +31,12 @@ async def wake_ai_engine():
     """Ping the AI Engine with retries until it wakes from Render cold sleep."""
     ai_url = settings.AI_ENGINE_URL.rstrip("/")
     health_url = f"{ai_url}/health"
-    max_retries = 12
-    delay = 15  # seconds between retries (~3 minutes total)
+    # Progressive delays: 5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30...
+    delays = [5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    max_retries = len(delays)
 
     logger.info(f"⏳ Waking AI Engine at {health_url} (up to {max_retries} attempts) ...")
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         for attempt in range(1, max_retries + 1):
             try:
                 resp = await client.get(health_url)
@@ -45,13 +46,16 @@ async def wake_ai_engine():
                         logger.info(f"✅ AI Engine is LIVE & Model Loaded (attempt {attempt})")
                         return True
                     else:
-                        logger.info(f"⏳ AI Engine is up but Model still loading (attempt {attempt}) ...")
+                        logger.info(f"⏳ AI Engine reachable but Model still loading (attempt {attempt}) ...")
+                elif resp.status_code in [502, 503, 504]:
+                    logger.info(f"⏳ AI Engine gateway waking up ({resp.status_code}) (attempt {attempt}) ...")
                 else:
-                    logger.warning(f"AI Engine returned {resp.status_code} (attempt {attempt})")
+                    logger.warning(f"AI Engine returned status {resp.status_code} (attempt {attempt})")
             except Exception as e:
-                logger.warning(f"AI Engine ping failed (attempt {attempt}): {e}")
+                logger.info(f"⏳ AI Engine connection pending (attempt {attempt}): {type(e).__name__}")
 
             if attempt < max_retries:
+                delay = delays[attempt-1]
                 await asyncio.sleep(delay)
 
     logger.error("❌ AI Engine did not wake up after all retries.")
@@ -64,7 +68,7 @@ async def keep_ai_engine_alive():
     health_url = f"{ai_url}/health"
 
     while True:
-        await asyncio.sleep(180)  # 3 minutes (Render sleeps after 15 min inactivity)
+        await asyncio.sleep(180)  # 3 minutes
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 resp = await client.get(health_url)
@@ -72,7 +76,7 @@ async def keep_ai_engine_alive():
                     logger.debug(f"AI Engine keep-alive OK")
                 else:
                     logger.warning(f"AI Engine keep-alive: status {resp.status_code}")
-                    # If AI Engine is down, try to wake it up
+                    # If AI Engine is down, try to wake it up in background
                     asyncio.create_task(wake_ai_engine())
         except Exception as e:
             logger.warning(f"AI Engine keep-alive failed: {e} — triggering wake-up")
@@ -81,18 +85,17 @@ async def keep_ai_engine_alive():
 
 async def keep_backend_alive():
     """
-    Self-ping to prevent Render from putting the BACKEND itself to sleep.
-    Renders considers a service inactive if it receives no inbound requests.
+    Self-ping using external URL to prevent Render from putting the BACKEND to sleep.
     """
-    # Determine the backend's own URL (on Render it listens on PORT)
-    port = os.environ.get("PORT", "8000")
-    self_url = f"http://0.0.0.0:{port}/"
-
+    url = settings.BACKEND_URL.rstrip("/")
+    if "localhost" in url or "0.0.0.0" in url:
+        logger.info("Backend self-ping using local address (may not prevent Render sleep)")
+    
     while True:
         await asyncio.sleep(240)  # 4 minutes
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.get(self_url)
+                resp = await client.get(url)
                 logger.debug(f"Backend self-ping: {resp.status_code}")
         except Exception as e:
             logger.debug(f"Backend self-ping skipped: {e}")
@@ -108,13 +111,14 @@ async def lifespan(app: FastAPI):
     await init_mongo()
     start_scheduler()
 
-    # Wake AI Engine (background — doesn't block backend from going live)
+    # Pre-trigger AI Engine wake-up immediately
+    logger.info("Initiating early AI Engine wake-up...")
     t1 = asyncio.create_task(wake_ai_engine())
     t2 = asyncio.create_task(keep_ai_engine_alive())
     t3 = asyncio.create_task(keep_backend_alive())
     _background_tasks = [t1, t2, t3]
 
-    logger.info("🚀 RAHI Backend started — AI Engine wake-up & keep-alive tasks launched")
+    logger.info("🚀 RAHI Backend started — AI Engine & Backend maintenance tasks active")
 
     yield  # App is running
 

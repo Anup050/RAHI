@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     MONGODB_URL: str | None = None
     DATABASE_URL: str | None = None
     AI_ENGINE_URL: str = "http://localhost:8001"
+    BACKEND_URL: str = "http://localhost:8000"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

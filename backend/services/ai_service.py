@@ -28,7 +28,7 @@ async def _wake_ai_engine_once(client: httpx.AsyncClient, health_url: str) -> bo
 async def _ensure_ai_engine_awake() -> None:
     """
     Wake the AI Engine if it's sleeping on Render.
-    Blocks up to ~90 seconds with exponential backoff.
+    Blocks up to ~3 minutes with progressive backoff.
     Called on-demand when a prediction request fails.
     """
     global _ai_engine_ready
@@ -36,14 +36,15 @@ async def _ensure_ai_engine_awake() -> None:
     health_url = f"{ai_url}/health"
 
     logger.info("On-demand AI Engine wake-up starting ...")
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        delays = [5, 10, 15, 20, 20, 20]  # ~90 s total
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        # Progressive delays: 5, 10, 15, 20, 30, 30, 30, 30 = ~190s total
+        delays = [5, 10, 15, 20, 30, 30, 30, 30] 
         for i, delay in enumerate(delays, 1):
             if await _wake_ai_engine_once(client, health_url):
                 logger.info(f"AI Engine is LIVE after on-demand wake (attempt {i})")
                 _ai_engine_ready = True
                 return
-            logger.warning(f"AI Engine still waking (attempt {i}), retrying in {delay}s ...")
+            logger.warning(f"AI Engine still waking (attempt {i}/{len(delays)}), retrying in {delay}s ...")
             await asyncio.sleep(delay)
 
     logger.error("AI Engine did not wake after on-demand attempts.")
@@ -53,17 +54,17 @@ async def _ensure_ai_engine_awake() -> None:
 async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
     """
     Sends symptoms to the AI Engine and returns predictions.
-    Includes retry logic and on-demand wake-up to survive Render cold starts.
+    Includes robust retry logic and on-demand wake-up to survive Render cold starts.
     """
     ai_url = settings.AI_ENGINE_URL.rstrip("/")
     predict_url = f"{ai_url}/predict"
     payload = {"symptoms": symptoms, "text": symptoms}
 
-    max_attempts = 3
+    max_attempts = 4
     # Long timeout: Render cold start can take 30-60 s
     client_timeout = httpx.Timeout(connect=30.0, read=60.0, write=10.0, pool=10.0)
 
-    async with httpx.AsyncClient(timeout=client_timeout) as client:
+    async with httpx.AsyncClient(timeout=client_timeout, follow_redirects=True) as client:
         for attempt in range(1, max_attempts + 1):
             try:
                 response = await client.post(predict_url, json=payload)
@@ -72,26 +73,32 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
                 logger.info(f"AI prediction success (attempt {attempt}): {data.get('predictions', [])}")
                 return data
 
-            except httpx.ConnectError as exc:
-                logger.warning(f"AI Engine connection failed (attempt {attempt}): {exc}")
+            except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
+                logger.warning(f"AI Engine connection failed (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
-                    # Trigger wake-up then retry
                     await _ensure_ai_engine_awake()
                     continue
 
             except httpx.ReadTimeout as exc:
-                logger.warning(f"AI Engine read timeout (attempt {attempt}): {exc}")
+                logger.warning(f"AI Engine read timeout (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
+                    # Render might be starting up but slow
                     await asyncio.sleep(5)
                     continue
 
             except httpx.HTTPStatusError as exc:
                 status = exc.response.status_code
-                logger.warning(f"AI Engine returned {status} (attempt {attempt})")
-                # 503 = model not loaded yet, retry after wake
-                if status == 503 and attempt < max_attempts:
+                logger.warning(f"AI Engine status {status} (attempt {attempt}/{max_attempts})")
+                
+                # 502, 503, 504 = transient gateway/load errors during cold start
+                if status in [502, 503, 504] and attempt < max_attempts:
+                    logger.info(f"Transient {status} detected, ensuring AI engine is awake...")
                     await _ensure_ai_engine_awake()
+                    # Small extra sleep to let the proxy stabilize
+                    await asyncio.sleep(2)
                     continue
+                
+                # If we get a 4xx or a 500 (actual app error), return the error
                 return {
                     "predictions": [],
                     "message": "AI Service error.",
@@ -99,7 +106,7 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
                 }
 
             except Exception as exc:
-                logger.error(f"Unexpected AI Engine error (attempt {attempt}): {exc}")
+                logger.error(f"Unexpected AI Engine error (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
                     await asyncio.sleep(3)
                     continue
@@ -108,6 +115,6 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
     logger.error("AI Engine unreachable after all retry attempts.")
     return {
         "predictions": [],
-        "message": "AI Service is starting up. Please try again in 1-2 minutes.",
-        "error": "AI Engine cold start in progress"
+        "message": "AI Service is currently warming up. This usually takes 30-60 seconds on the first request.",
+        "error": "AI Engine cold start exceeded timeout"
     }
