@@ -9,6 +9,8 @@ logger = logging.getLogger("rahi-backend")
 
 # ── Module-level state to track AI Engine availability ──
 _ai_engine_ready = False
+_wake_lock = asyncio.Lock()
+_wake_in_progress = False
 
 
 async def _wake_ai_engine_once(client: httpx.AsyncClient, health_url: str) -> bool:
@@ -28,27 +30,36 @@ async def _wake_ai_engine_once(client: httpx.AsyncClient, health_url: str) -> bo
 async def _ensure_ai_engine_awake() -> None:
     """
     Wake the AI Engine if it's sleeping on Render.
+    Uses a lock to ensure only one wake-up loop runs at a time.
     Blocks up to ~3 minutes with progressive backoff.
-    Called on-demand when a prediction request fails.
     """
-    global _ai_engine_ready
-    ai_url = settings.AI_ENGINE_URL.rstrip("/")
-    health_url = f"{ai_url}/health"
+    global _ai_engine_ready, _wake_in_progress
+    
+    if _wake_in_progress:
+        return
 
-    logger.info("On-demand AI Engine wake-up starting ...")
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-        # Progressive delays: 5, 10, 15, 20, 30, 30, 30, 30 = ~190s total
-        delays = [5, 10, 15, 20, 30, 30, 30, 30] 
-        for i, delay in enumerate(delays, 1):
-            if await _wake_ai_engine_once(client, health_url):
-                logger.info(f"AI Engine is LIVE after on-demand wake (attempt {i})")
-                _ai_engine_ready = True
-                return
-            logger.warning(f"AI Engine still waking (attempt {i}/{len(delays)}), retrying in {delay}s ...")
-            await asyncio.sleep(delay)
+    async with _wake_lock:
+        _wake_in_progress = True
+        try:
+            ai_url = settings.AI_ENGINE_URL.rstrip("/")
+            health_url = f"{ai_url}/health"
 
-    logger.error("AI Engine did not wake after on-demand attempts.")
-    _ai_engine_ready = False
+            logger.info("On-demand AI Engine wake-up starting ...")
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                # Progressive delays: 5, 10, 15, 20, 30, 30, 30, 30 = ~190s total
+                delays = [5, 10, 15, 20, 30, 30, 30, 30] 
+                for i, delay in enumerate(delays, 1):
+                    if await _wake_ai_engine_once(client, health_url):
+                        logger.info(f"AI Engine is LIVE after on-demand wake (attempt {i})")
+                        _ai_engine_ready = True
+                        return
+                    logger.warning(f"AI Engine still waking (attempt {i}/{len(delays)}), retrying in {delay}s ...")
+                    await asyncio.sleep(delay)
+
+            logger.error("AI Engine did not wake after on-demand attempts.")
+            _ai_engine_ready = False
+        finally:
+            _wake_in_progress = False
 
 
 async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
@@ -76,7 +87,8 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
             except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
                 logger.warning(f"AI Engine connection failed (attempt {attempt}/{max_attempts}): {exc}")
                 if attempt < max_attempts:
-                    await _ensure_ai_engine_awake()
+                    asyncio.create_task(_ensure_ai_engine_awake())
+                    await asyncio.sleep(5)
                     continue
 
             except httpx.ReadTimeout as exc:
@@ -92,10 +104,10 @@ async def get_ai_prediction(symptoms: str) -> Dict[str, Any]:
                 
                 # 502, 503, 504 = transient gateway/load errors during cold start
                 if status in [502, 503, 504] and attempt < max_attempts:
-                    logger.info(f"Transient {status} detected, ensuring AI engine is awake...")
-                    await _ensure_ai_engine_awake()
-                    # Small extra sleep to let the proxy stabilize
-                    await asyncio.sleep(2)
+                    logger.info(f"Transient {status} detected, triggering background wake-up...")
+                    asyncio.create_task(_ensure_ai_engine_awake())
+                    # Wait progressively before retrying: 5s, 10s, 15s
+                    await asyncio.sleep(5 * attempt)
                     continue
                 
                 # If we get a 4xx or a 500 (actual app error), return the error

@@ -27,39 +27,49 @@ from jobs.scheduler import start_scheduler
 
 
 # ── AI Engine Wake-Up & Keep-Alive ──────────────────────────────────
+_ai_wake_in_progress = False
+
 async def wake_ai_engine():
     """Ping the AI Engine with retries until it wakes from Render cold sleep."""
-    ai_url = settings.AI_ENGINE_URL.rstrip("/")
-    health_url = f"{ai_url}/health"
-    # Progressive delays: 5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30...
-    delays = [5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
-    max_retries = len(delays)
+    global _ai_wake_in_progress
+    if _ai_wake_in_progress:
+        return
+    
+    _ai_wake_in_progress = True
+    try:
+        ai_url = settings.AI_ENGINE_URL.rstrip("/")
+        health_url = f"{ai_url}/health"
+        # Progressive delays: 5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30...
+        delays = [5, 5, 10, 10, 15, 15, 20, 20, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+        max_retries = len(delays)
 
-    logger.info(f"⏳ Waking AI Engine at {health_url} (up to {max_retries} attempts) ...")
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-        for attempt in range(1, max_retries + 1):
-            try:
-                resp = await client.get(health_url)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    if data.get("model_loaded") is True:
-                        logger.info(f"✅ AI Engine is LIVE & Model Loaded (attempt {attempt})")
-                        return True
+        logger.info(f"⏳ Waking AI Engine at {health_url} (up to {max_retries} attempts) ...")
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            for attempt in range(1, max_retries + 1):
+                try:
+                    resp = await client.get(health_url)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        if data.get("model_loaded") is True:
+                            logger.info(f"✅ AI Engine is LIVE & Model Loaded (attempt {attempt})")
+                            return True
+                        else:
+                            logger.info(f"⏳ AI Engine reachable but Model still loading (attempt {attempt}) ...")
+                    elif resp.status_code in [502, 503, 504]:
+                        logger.info(f"⏳ AI Engine gateway waking up ({resp.status_code}) (attempt {attempt}) ...")
                     else:
-                        logger.info(f"⏳ AI Engine reachable but Model still loading (attempt {attempt}) ...")
-                elif resp.status_code in [502, 503, 504]:
-                    logger.info(f"⏳ AI Engine gateway waking up ({resp.status_code}) (attempt {attempt}) ...")
-                else:
-                    logger.warning(f"AI Engine returned status {resp.status_code} (attempt {attempt})")
-            except Exception as e:
-                logger.info(f"⏳ AI Engine connection pending (attempt {attempt}): {type(e).__name__}")
+                        logger.warning(f"AI Engine returned status {resp.status_code} (attempt {attempt})")
+                except Exception as e:
+                    logger.info(f"⏳ AI Engine connection pending (attempt {attempt}): {type(e).__name__}")
 
-            if attempt < max_retries:
-                delay = delays[attempt-1]
-                await asyncio.sleep(delay)
+                if attempt < max_retries:
+                    delay = delays[attempt-1]
+                    await asyncio.sleep(delay)
 
-    logger.error("❌ AI Engine did not wake up after all retries.")
-    return False
+        logger.error("❌ AI Engine did not wake up after all retries.")
+        return False
+    finally:
+        _ai_wake_in_progress = False
 
 
 async def keep_ai_engine_alive():
